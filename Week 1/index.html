@@ -1,0 +1,113 @@
+<html>
+
+<head>
+
+	<title>ThumbPlay</title>
+
+	<link rel="stylesheet" type="text/css" href="myCSS.css">
+<!-- 	<canvas witdh="300" height="300" id="leftcanvas" />
+ -->
+ <!-- 	<canvas witdh="300" height="300" id="rightcanvas" />
+ -->
+<script type="text/javascript">
+
+	//CANVAS ELEMENTS
+
+	// var leftCanvas = document.getElementById('leftcanvas');
+	// var rightCanvas = document.getElementById('rightcanvas');
+	// var leftContext = leftCanvas.getContext('2d');
+	// var rightContext = rightCanvas.getContext('2d');
+
+	// var drawLeft = function() {
+	// 	leftContext.beginPath();
+	// 	leftContext.strokeStyle = "#ff0000";
+	// 	leftContext.moveTo(0,0);
+	// 	leftContext.lineTo(leftCanvas.width/2, leftCanvas.height/2);
+	// 	leftContext.stroke();
+	// };
+
+	// var drawRight = function() {
+	// 	rightContext.beginPath();
+	// 	rightContext.strokeStyle = #000000;
+	// 	rightContext.moveTo(0,0);
+	// 	rightContext.lineTo(rightCanvas.width/2, rightCanvas.height/2);
+	// 	rightContext.stroke();
+	// };
+
+	//setInterval(drawLeft, 1000/30);
+
+	//VIDEO ELEMENTS
+
+	var leftThumbPlayed = false;
+	var rightThumbPlayed = false;
+
+	var leftThumbBreak = function() {
+		var leftThumbVideo = document.getElementById("mainVideo");
+		leftThumbVideo.src = "http://itp.nyu.edu/~jab680/assets/LeftThumb.mp4"
+		leftThumbVideo.load();
+		leftThumbVideo.play();
+
+		var womanScream = document.getElementById("mainAudio");
+		womanScream.src = "http://itp.nyu.edu/~jab680/assets/woman_scream.wav";
+		
+		var leftThumbBreakPic = document.getElementById("leftThumbUp");
+		leftThumbBreakPic.src = "left_thumb_break.png";
+		var rightThumbBreakPic = document.getElementById("rightThumbUp");
+		rightThumbBreakPic.src = "right_thumb.png";
+		
+		leftThumbPlayed = true;
+		rightThumbPlayed = false;
+
+	};
+
+	var rightThumbBreak = function() {
+		var rightThumbVideo = document.getElementById("mainVideo");
+		rightThumbVideo.src = "http://itp.nyu.edu/~jab680/assets/RightThumb.mp4";
+		rightThumbVideo.load();
+		rightThumbVideo.play();
+
+		var childrenScream = document.getElementById("mainAudio");
+		childrenScream.src = "http://itp.nyu.edu/~jab680/assets/children_scream.wav"
+
+		var rightThumbBreakPic = document.getElementById("rightThumbUp");
+		rightThumbBreakPic.src = "right_thumb_break.png";
+		var leftThumbBreakPic = document.getElementById("leftThumbUp");
+		leftThumbBreakPic.src = "left_thumb.png";
+
+		// rightThumbVideo.onended = function() {
+		// 	rightThumbVideo.src = "http://itp.nyu.edu/~jab680/assets/ThumbsUp.mp4";
+		// 	rightThumbVideo.load();
+		// 	rightThumbVideo.play();
+
+		// 	rightThumbBreakPic.src = "right_thumb.png";
+		// }
+
+		rightThumbPlayed = true;
+		leftThumbPlayed = false;
+
+	};
+
+	</script>
+
+</head>
+
+<body>
+
+	<h1>Play With My Thumbs!</h1>
+
+	<video width="720" height="480" id="mainVideo" autoplay loop>
+		<source src="http://itp.nyu.edu/~jab680/assets/ThumbsUp.mp4" type="video/mp4">
+	</video>
+
+	<audio id="mainAudio" autoplay loop>
+		<source src="http://itp.nyu.edu/~jab680/assets/whistle.mp3" type="audio/mp3">
+	</audio>
+
+<br>
+
+<a href="#" onClick="leftThumbBreak();"><img width="150" height="288" src="left_thumb.png" id="leftThumbUp"></a>
+<a href="#" onClick="rightThumbBreak();"><img width="150" height="288" src="right_thumb.png" id="rightThumbUp"></a>
+
+</body>
+
+</html>
