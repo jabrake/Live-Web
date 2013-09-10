@@ -5,36 +5,69 @@
 	<title>ThumbPlay</title>
 
 	<link rel="stylesheet" type="text/css" href="myCSS.css">
-<!-- 	<canvas witdh="300" height="300" id="leftcanvas" />
- -->
- <!-- 	<canvas witdh="300" height="300" id="rightcanvas" />
- -->
-<script type="text/javascript">
+
+	<script type="text/javascript">
 
 	//CANVAS ELEMENTS
 
-	// var leftCanvas = document.getElementById('leftcanvas');
-	// var rightCanvas = document.getElementById('rightcanvas');
-	// var leftContext = leftCanvas.getContext('2d');
-	// var rightContext = rightCanvas.getContext('2d');
+	var init = function() {
 
-	// var drawLeft = function() {
-	// 	leftContext.beginPath();
-	// 	leftContext.strokeStyle = "#ff0000";
-	// 	leftContext.moveTo(0,0);
-	// 	leftContext.lineTo(leftCanvas.width/2, leftCanvas.height/2);
-	// 	leftContext.stroke();
-	// };
+		var leftCanvas = document.getElementById('leftcanvas');
+		var rightCanvas = document.getElementById('rightcanvas');
+		var leftContext = leftCanvas.getContext('2d');
+		var rightContext = rightCanvas.getContext('2d');
 
-	// var drawRight = function() {
-	// 	rightContext.beginPath();
-	// 	rightContext.strokeStyle = #000000;
-	// 	rightContext.moveTo(0,0);
-	// 	rightContext.lineTo(rightCanvas.width/2, rightCanvas.height/2);
-	// 	rightContext.stroke();
-	// };
+		var drawLeft = function() {
+			leftContext.beginPath();
+			leftContext.strokeStyle = "#ff0000";
+			leftContext.moveTo(75, 75);
+			leftContext.lineTo(100, 100);
+			leftContext.stroke();
 
-	//setInterval(drawLeft, 1000/30);
+			leftContext.beginPath();
+			leftContext.strokeStyle = "#ff0000";
+			leftContext.moveTo(75, 120);
+			leftContext.lineTo(100, 120);
+			leftContext.stroke();
+
+			leftContext.beginPath();
+			leftContext.strokeStyle = "#ff0000";
+			leftContext.moveTo(75, 165);
+			leftContext.lineTo(100, 140);
+			leftContext.stroke();
+
+		};
+
+		var drawRight = function() {
+			rightContext.beginPath();
+			rightContext.strokeStyle = "#ff0000";
+			rightContext.moveTo(225, 75);
+			rightContext.lineTo(200, 100);
+			rightContext.stroke();
+
+			rightContext.beginPath();
+			rightContext.strokeStyle = "#ff0000";
+			rightContext.moveTo(225, 120);
+			rightContext.lineTo(200, 120);
+			rightContext.stroke();
+
+			rightContext.beginPath();
+			rightContext.strokeStyle = "#ff0000";
+			rightContext.moveTo(225, 165);
+			rightContext.lineTo(200, 140);
+			rightContext.stroke();
+		};
+
+		var clearCanvas = function() {
+			leftContext.clearRect(0,0,leftCanvas.width, leftCanvas.height);
+			rightContext.clearRect(0,0, rightCanvas.width, rightCanvas.height);
+		};
+
+		setInterval(drawRight, 1000);
+		setInterval(drawLeft, 1000);
+		setInterval(clearCanvas, 1500);
+
+	};
 
 	//VIDEO ELEMENTS
 
@@ -74,14 +107,6 @@
 		var leftThumbBreakPic = document.getElementById("leftThumbUp");
 		leftThumbBreakPic.src = "left_thumb.png";
 
-		// rightThumbVideo.onended = function() {
-		// 	rightThumbVideo.src = "http://itp.nyu.edu/~jab680/assets/ThumbsUp.mp4";
-		// 	rightThumbVideo.load();
-		// 	rightThumbVideo.play();
-
-		// 	rightThumbBreakPic.src = "right_thumb.png";
-		// }
-
 		rightThumbPlayed = true;
 		leftThumbPlayed = false;
 
@@ -91,9 +116,12 @@
 
 </head>
 
-<body>
+<body onload="init();">
 
 	<h1>Play With My Thumbs!</h1>
+
+	<canvas witdh="300" height="300" id="leftcanvas"></canvas>
+	<canvas witdh="300" height="300" id="rightcanvas"></canvas> 
 
 	<video width="720" height="480" id="mainVideo" autoplay loop>
 		<source src="http://itp.nyu.edu/~jab680/assets/ThumbsUp.mp4" type="video/mp4">
