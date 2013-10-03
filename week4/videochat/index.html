@@ -1,0 +1,75 @@
+<html>
+	<head>
+		<script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+		<script type='text/javascript'>
+
+			var myvideo = null;
+			var mystream = null;
+			var mypeerid = null;
+			var peer = null;
+
+			var init = function() {
+
+				myvideo = document.getElementById('myvideo');
+
+				window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+				if (navigator.getUserMedia) {
+					navigator.getUserMedia({video: true, audio: true}, function(stream) {
+						my_stream = stream;
+						myvideo.src = window.URL.createObjectURL(stream) || stream;
+						myvideo.play();
+					}, 
+
+					function(err) {
+						console.log('Failed to get local stream', err);
+						alert("Failed to get local stream " + err);
+					});
+				}		
+			};
+
+			peer = new Peer({key: 'vp98r93dzr4cmcxr'});
+
+			peer.on('open', function(id) {
+  				console.log('My peer ID is: ' + id);
+  				mypeerid = id;
+			});
+
+			peer.on('call', function(call) {
+  				call.answer(mystream);
+
+  				call.on('stream', function(remoteStream) {
+  					// Show stream in some video/canvas element.
+  					var othervideo = document.createElement("video");
+	    			othervideo.src = window.URL.createObjectURL(remoteStream) || remoteStream;
+	    			document.body.append(othervideo);
+	    			othervideo.play();
+  				});
+  			});
+
+			var placecall = function() {
+
+				var call = peer.call(document.getElementById('other_peer_id').value, mystream);
+	  			call.on('stream', function(remoteStream) {
+	    			// Show stream in some video/canvas element.
+	    			var othervideo = document.createElement("video");
+	    			othervideo.src = window.URL.createObjectURL(remoteStream) || remoteStream;
+	    			document.body.appendChild(othervideo);
+	    			othervideo.play();
+	  			});
+  			}
+
+		</script>
+
+	</head>
+
+	<body onload='init();'>
+		My video:
+		<video id='myvideo' width='320' height='240'></video>
+
+		<input type='text' id='other_peer_id'>
+		<button value='Call' onclick='placecall()'>
+
+	</body>
+</html>
