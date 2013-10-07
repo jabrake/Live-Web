@@ -24,7 +24,7 @@ function requestHandler(req, res) {
 
 // WebSocket Portion
 // WebSockets work with the HTTP server
-var io = require('socket.io').listen(httpServer);
+var io = require('socket.io').listen(httpServer,{log: false});
 
 var users = new Array();
 
