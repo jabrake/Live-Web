@@ -15,48 +15,20 @@
 			var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
 
 			var myId;
+			var characterImagesSources = 7;
+			var characterImages = new Array();
+			var characters = new Array();
 
-			var char0 = document.createElement("img");
-			char0.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel1.png");
-			char0.className += "pixelimage";
-			char0.id = "pixel0";
-			// console.log("created char0", char0);
+			for (i = 0; i < characterImagesSources; i++) {
+				characterImages[i] = "http://itp.nyu.edu/~jab680/assets/pixel" + [i] + ".png";
+			}
 
-			var char1 = document.createElement("img");
-			char1.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel2.png");
-			char1.className += "pixelimage";
-			char1.id = "pixel1";
-			// console.log("created char1", char1);
-
-			var char2 = document.createElement("img");
-			char2.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel3.png");
-			char2.className += "pixelimage";
-			char2.id = "pixel2";
-			// console.log("created char2", char2);
-
-			var char3 = document.createElement("img");
-			char3.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel4.png");
-			char3.className += "pixelimage";
-			char3.id = "pixel3";
-			// console.log("created char3", char3);
-
-			var char4 = document.createElement("img");
-			char4.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel5.png");
-			char4.className += "pixelimage";
-			char4.id = "pixel4";
-			// console.log("created char4", char4);
-
-			var char5 = document.createElement("img");
-			char5.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel6.png");
-			char5.className += "pixelimage";
-			char5.id = "pixel5";
-			// console.log("created char5", char5);
-
-			var char6 = document.createElement("img");
-			char6.setAttribute("src", "http://itp.nyu.edu/~jab680/assets/pixel7.png");
-			char6.className += "pixelimage";
-			char6.id = "pixel6";
-			// console.log("created char6", char6);
+			for (i = 0; i < characterImages.length; i++) {
+				characters[i] = document.createElement("img");
+				characters[i].setAttribute("src", characterImages[i]);
+				characters[i].className += "pixelimage";
+				characters[i].id = "pixel" + i;
+			}
 			
 			socket.on('connect', function() {
 				console.log("Connected");
@@ -66,51 +38,18 @@
 				console.log("myId", data);
 
 				myId = data;
+				idCounter = myId+1;
 
-				if (myId == 0) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char0);
-					myChar = document.getElementById('pixel0');
-				} 
-				else if (myId == 1) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char1);
-					myChar = document.getElementById('pixel1');
+				for (i = 0; i < idCounter; i++) {
+					if (myId == i) {
+						document.body.appendChild(characters[i]);
+						console.log("Created character with ID: " + myId);
+					}
 				}
-				else if (myId == 2) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char2);
-					myChar = document.getElementById('pixel2');
-				}
-				else if (myId == 3) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char3);
-					myChar = document.getElementById('pixel3');
-				}
-
-				else if (myId == 4) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char4);
-					myChar = document.getElementById('pixel4');
-				}
-
-				else if (myId == 5) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char5);
-					myChar = document.getElementById('pixel5');
-				}
-
-				else if (myId == 6) {
-					//alert("my id is: " + myId);
-					document.body.appendChild(char6);
-					myChar = document.getElementById('pixel6');
-				}
-
 			});
 
 			// Receive from any event
 			socket.on('othermouse', function (data) {
-				//console.log(data.x + " " + data.y);
 
 				seeMoves(data.x,data.y, data.id);
 
@@ -124,7 +63,7 @@
 			var canvas;
 			var context;
 
-			var initcanvas = function() {
+			var init = function() {
 
 				document.addEventListener('mousemove', function (evt) {
 
@@ -139,118 +78,33 @@
 			};
 	
 			var moveChar = function (xval,yval) {
+
+				idCounter = myId+1;
 				
-				//console.log("draw " + xval + " " + yval);
-
-				if (myId == 0) {
-
-					char0 = document.getElementById('pixel0');
-					char0.style.left = xval;
-					char0.style.top = yval;
-				}
-
-				else if (myId == 1) {
-
-					char1 = document.getElementById('pixel1');
-					char1.style.left = xval;
-					char1.style.top = yval;
-				}
-
-				else if (myId == 2) {
-
-					char2 = document.getElementById('pixel2');
-					char2.style.left = xval;
-					char2.style.top = yval;
-				}
-
-				else if (myId == 3) {
-
-					char3 = document.getElementById('pixel3');
-					char3.style.left = xval;
-					char3.style.top = yval;
-				}
-
-				else if (myId == 4) {
-
-					char4 = document.getElementById('pixel4');
-					char4.style.left = xval;
-					char4.style.top = yval;
-				}
-
-				else if (myId == 5) {
-
-					char5 = document.getElementById('pixel5');
-					char5.style.left = xval;
-					char5.style.top = yval;
-				}
-
-				else if (myId == 6) {
-
-					char6 = document.getElementById('pixel6');
-					char6.style.left = xval;
-					char6.style.top = yval;
+				for (i = 0; i < idCounter; i++) {
+					if (myId == i) {
+						characters[i].style.left = xval;
+						characters[i].style.top = yval;
+					}
 				}
 			};
 	
 			var seeMoves = function (xval,yval,id) {
 
-				//console.log("draw " + xval + " " + yval);
+				idCounter = myId+1;
 
-				if (id == 0) {
-
-					char0 = document.getElementById('pixel0');
-					char0.style.left = xval;
-					char0.style.left = yval;
-				}
-
-				else if (id == 1) {
-
-					char1 = document.getElementById('pixel1');
-					char1.style.left = xval;
-					char1.style.left = yval;
-				}
-
-				else if (id == 2) {
-
-					char2 = document.getElementById('pixel2');
-					char2.style.left = xval;
-					char2.style.left = yval;
-				}
-
-				else if (id == 3) {
-
-					char3 = document.getElementById('pixel3');
-					char3.style.left = xval;
-					char3.style.left = yval;
-				}
-
-				else if (id == 4) {
-
-					char4 = document.getElementById('pixel4');
-					char4.style.left = xval;
-					char4.style.left = yval;
-				}
-
-				else if (id == 5) {
-
-					char5 = document.getElementById('pixel5');
-					char5.style.left = xval;
-					char5.style.left = yval;
-				}
-
-				else if (id == 6) {
-
-					char6 = document.getElementById('pixel6');
-					char6.style.left = xval;
-					char6.style.left = yval;
+				for (i = 0; i < idCounter; i++) {
+					if (myId == i) {
+						characters[i].style.left = xval;
+						characters[i].style.top = yval;
+					}
 				}
 			};
 	
 		</script>			
 	</head>
 
-	<body onload="initcanvas();">
-<!-- 		<canvas id="mycanvas" style="margin: 0px; padding: 0px; border-style: solid; border-size: 3px;"></canvas> -->
+	<body onload="init();">
 	
 	</body>
 </html>
