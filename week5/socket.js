@@ -26,37 +26,38 @@ function requestHandler(req, res) {
 // WebSockets work with the HTTP server
 var io = require('socket.io').listen(httpServer,{log: false});
 
-var users = new Array();
+var players = new Array();
 
 // Register a callback function to run when we have an individual connection
 // This is run for each individual user that connects
-io.sockets.on('connection', 
-	// We are given a websocket object in our function
-	function (socket) {
-	
-		console.log("We have a new client: " + socket.id);
+io.sockets.on('connection', function (socket) {
+	//Connect to server
+	console.log("We have a new client: " + socket.id);
 
-		var myId = -1;
+	var playerId = -1;
+	playerId = players.length;
+	players[playerId] = socket.id;
+	console.log("Player ID: " + playerId);
 
-		myId = users.length;
-		users[myId] = socket.id;
+	//Send new player ID to client
+	socket.emit('join', playerId);
 
-		console.log("ID:" + myId);
+	//Emit list of players to everyone
+	io.sockets.emit('list', players);
 
-		socket.emit('set_id', myId);
+	socket.on('otherkeys', function (data) {
+		console.log(data);
+
+		socket.broadcast.emit('otherkeys', data);
+	});
 		
-		// When this user emits, client side: socket.emit('otherevent',some data);
-		socket.on('othermouse', function (data) {
-			// Data comes in as whatever was sent, including objects
-			//console.log("Received: 'othermouse' " + data.x + " " + data.y);
-			
-			// Send it to all of the clients
-			socket.broadcast.emit('othermouse', data);
-		});
+	socket.on('disconnect', function() {
+
+		io.sockets.emit('leave', playerId);
 		
-		
-		socket.on('disconnect', function() {
-			console.log("Client has disconnected " + socket.id);
-		});
-	}
-);
+		players.splice(playerId, 1);
+
+		console.log("removing player ID: " + playerId);
+
+	});
+});

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style type="text/css">
+			.pixelimage{
+				position: absolute;
+				left: 10px;
+				top: 10px;
+				width: 10%;
+				height: auto;
+			}
+		</style>
+		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript">
+		window.onload = function() {
+		
+			var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
+
+			socket.on("join", function (data) {
+				var element = document.createElement('img');
+				element.src = data.src;
+				element.id = data.id;
+
+				var body = document.getElementsByTagName('body')[0];
+				body.appendChild(element);
+			});
+
+			socket.on("list", function (data) {
+				for (i = 0; i < data.length; i++) {
+					var element = document.createElement('img');
+					element.src = data[i].src;
+					element.id = data[i].id;
+
+					var body = document.getElementsByTagName('body')[0];
+					body.appendChild(element);
+				};
+			});
+
+			socket.on("leave", function (data) {
+				var element = document.getElementById(data.id);
+				if (element)
+					element.parentNode.removeChild(element);
+			});
+		}
+
+			// var myId;
+			// var otherId;
+			// var characterImagesSources = 12;
+			// var characterImages = new Array();
+			// var characters = new Array();
+
+			// for (i = 0; i < characterImagesSources; i++) {
+			// 	characterImages[i] = "http://itp.nyu.edu/~jab680/assets/pixel" + [i] + ".png";
+			// }
+
+			// for (i = 0; i < characterImages.length; i++) {
+			// 	characters[i] = document.createElement("img");
+			// 	characters[i].setAttribute("src", characterImages[i]);
+			// 	characters[i].className += "pixelimage";
+			// 	characters[i].id = "pixel" + i;
+			// }
+			
+			// socket.on('connect', function() {
+			// 	console.log("Connected");
+			// });
+
+			// socket.on('set_id', function (data) {
+			// 	console.log("myId", data);
+
+			// 	myId = data;
+
+			// 	document.body.appendChild(characters[myId]);
+			// 	console.log("Created character with ID: " + myId);
+
+			// });
+
+			// socket.on('other_id', function (data) {
+			// 	console.log("otherId", data);
+
+			// 	otherId = data;
+
+			// 	document.body.appendChild(characters[otherId]);
+			// 	console.log("Created character with ID: " + otherId);
+
+			// });
+
+			// // Receive from any event
+			// socket.on('othermouse', function (data) {
+
+			// 	seeMoves(data.x,data.y, data.id);
+
+			// });
+
+			// socket.on('disconnect', function (data) {
+
+			// 	myId = data;
+				
+			// 	document.body.removeChild(characters[myId]);
+			// 	console.log("Removed character with ID: " + myId);
+			// });
+			
+			// var sendmouse = function(xval, yval) {
+			// 	//console.log("sendmouse: " + xval + " " + yval);
+			// 	socket.emit('othermouse',{ x: xval, y: yval, id: myId });
+			// };
+
+			// var canvas;
+			// var context;
+
+			// var init = function() {
+
+			// 	document.addEventListener('mousemove', function (evt) {
+
+			// 		x = evt.clientX;
+			// 		y = evt.clientY;
+
+			// 		sendmouse(x,y);
+			// 		moveChar(x,y);
+
+			// 	}, false);
+			// };
+	
+			// var moveChar = function (xval,yval) {
+
+			// 	characters[myId].style.left = xval;
+			// 	characters[myId].style.top = yval;
+
+			// };
+	
+			// var seeMoves = function (xval,yval,id) {
+
+			// 	characters[otherId].style.left = xval;
+			// 	characters[otherId].style.top = yval;
+
+			// };
+	
+		</script>			
+	</head>
+
+<!-- 	<body onload="init();">   -->
+	<body>
+	
+	</body>
+</html>

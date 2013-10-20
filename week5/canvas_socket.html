@@ -1,23 +1,51 @@
 <html>
 	<head>
 		<style type="text/css">
-			.pixelimage{
+			.pixelimage {
 				position: absolute;
 				left: 10px;
 				top: 10px;
 				width: 10%;
 				height: auto;
 			}
+
+			#canvasContainer {
+				position: fixed;
+				left: 0px;
+				right: 0px;
+				top: 500px;
+				bottom: 0px;
+				z-index: 1;
+				background-color: black;
+			}
+
+			#myCanvas {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				left: 0px;
+				top: 0px;
+				z-index: 1;
+			}
+
 		</style>
+
 		<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script type="text/javascript" src="http://code.createjs.com/createjs-2013.09.25.min.js"></script>
 		<script type="text/javascript">
+
+		var init = function() {
 		
 			var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
 
-			var myId;
-			var characterImagesSources = 7;
+			var playerId;
+			var loc, xloc, yloc;
+			var characterImagesSources = 12;
 			var characterImages = new Array();
 			var characters = new Array();
+
+			var randomX = Math.floor(Math.random() * (window.innerWidth - 0 + 1)) + 0;
 
 			for (i = 0; i < characterImagesSources; i++) {
 				characterImages[i] = "http://itp.nyu.edu/~jab680/assets/pixel" + [i] + ".png";
@@ -28,83 +56,129 @@
 				characters[i].setAttribute("src", characterImages[i]);
 				characters[i].className += "pixelimage";
 				characters[i].id = "pixel" + i;
+				characters[i].style.left = randomX + "px";
+				characters[i].style.top = "400px";
 			}
 			
 			socket.on('connect', function() {
 				console.log("Connected");
 			});
 
-			socket.on('set_id', function (data) {
-				console.log("myId", data);
+			socket.on('join', function (data) {
 
-				myId = data;
-				idCounter = myId+1;
+				console.log("playerId:", data);
+				playerId = data;
+				console.log("Created character with ID: " + playerId);
+			});
 
-				for (i = 0; i < idCounter; i++) {
-					if (myId == i) {
-						document.body.appendChild(characters[i]);
-						console.log("Created character with ID: " + myId);
-					}
-				}
+			socket.on('list', function (data) {
+
+				for (i = 0; i < data.length; i++) {
+					var oplayerId = i;
+					//console.log("emitting playerId to all: " + oplayerId + " number: " + i);
+					document.body.appendChild(characters[oplayerId]);
+					//console.log("Created character with ID: " + oplayerId);
+				};
+			});
+
+			socket.on('leave', function (data) {
+
+				document.body.removeChild(characters[data]);
+				console.log("Removed character with ID: " + data);
+
 			});
 
 			// Receive from any event
-			socket.on('othermouse', function (data) {
+			socket.on('otherkeys', function (data) {
 
-				seeMoves(data.x,data.y, data.id);
+				//console.log("Receiving data: ", 'otherkeys', data);
+
+				seeMoves(data.xloc, data.yloc, data.id);
+
+				//console.log("xloc: ", data.xloc, "yloc: ", data.yloc, "id: ", data.id);
 
 			});
-			
-			var sendmouse = function(xval, yval) {
-				//console.log("sendmouse: " + xval + " " + yval);
-				socket.emit('othermouse',{ x: xval, y: yval, id: myId });
+
+			var sendKeys = function(xval, yval) {
+				console.log('sendKeys', xval, yval);
+				socket.emit('otherkeys', { 
+					xloc: xval, 
+					yloc: yval, 
+					id: playerId
+				});
 			};
 
-			var canvas;
-			var context;
+			var canvas = document.getElementById('myCanvas');
+			var context = canvas.getContext('2d');
 
-			var init = function() {
+			document.addEventListener('keydown', function (evt) {
 
-				document.addEventListener('mousemove', function (evt) {
+				var key = event.which;
 
-					x = evt.clientX;
-					y = evt.clientY;
+				var getPosition = function (id) {
+					var p = $("#pixel" + id);
+					loc = p.position();
+				}
 
-					sendmouse(x,y);
-					moveChar(x,y);
+				switch (key) {
+					case 37: //LEFT
+					$("#pixel" + playerId).css("left", "-=10");
+					getPosition(playerId);
+					xloc = loc.left;
+					break;
 
-				}, false);
+					case 38: //UP
+					$("#pixel" + playerId).css("top", "-=10");
+					getPosition(playerId);
+					yloc = loc.top;
+					break;
 
-			};
+					case 39: //RIGHT
+					$("#pixel" + playerId).css("left", "+=10");
+					getPosition(playerId);
+					xloc = loc.left;
+					break;
+
+					case 40: //DOWN
+					$("#pixel" + playerId).css("top", "+=10");
+					getPosition(playerId);
+					yloc = loc.top;
+					break;
+
+					//case for JUMP? Remove y navigation?
+				}
+
+				sendKeys(xloc,yloc);
+				moveChar(xloc,yloc);
+
+			}, true);
 	
 			var moveChar = function (xval,yval) {
 
-				idCounter = myId+1;
-				
-				for (i = 0; i < idCounter; i++) {
-					if (myId == i) {
-						characters[i].style.left = xval;
-						characters[i].style.top = yval;
-					}
-				}
+				xval = xloc;
+				yval = yloc;
+
 			};
 	
 			var seeMoves = function (xval,yval,id) {
 
-				idCounter = myId+1;
+				//console.log("seeMoves: " + xval + " " + yval + " " + id);
 
-				for (i = 0; i < idCounter; i++) {
-					if (myId == i) {
-						characters[i].style.left = xval;
-						characters[i].style.top = yval;
-					}
-				}
+				$("#pixel" + id).css("left", xval);
+				$("#pixel" + id).css("top", yval);
+
 			};
+
+		};
 	
 		</script>			
 	</head>
 
 	<body onload="init();">
+
+		<div id="canvasContainer"> 
+			<canvas id="myCanvas" width="100" height="100"></canvas>
+		</div>
 	
 	</body>
 </html>
