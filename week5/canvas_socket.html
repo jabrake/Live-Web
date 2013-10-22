@@ -5,18 +5,8 @@
 				position: absolute;
 				left: 10px;
 				top: 10px;
-				width: 10%;
+				width: 5%;
 				height: auto;
-			}
-
-			#canvasContainer {
-				position: fixed;
-				left: 0px;
-				right: 0px;
-				top: 500px;
-				bottom: 0px;
-				z-index: 1;
-				background-color: black;
 			}
 
 			#myCanvas {
@@ -25,7 +15,14 @@
 				height: 100%;
 				left: 0px;
 				top: 0px;
-				z-index: 1;
+/*				z-index: 1;
+*/			}
+
+			.pixelFood {
+				position: fixed;
+				width: 20px;
+				height: 20px;
+				background-color: #000000;
 			}
 
 		</style>
@@ -40,25 +37,68 @@
 			var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
 
 			var playerId;
-			var loc, xloc, yloc;
+			var loc, xloc, yloc, size, characterLoc, randomColor;
 			var characterImagesSources = 12;
 			var characterImages = new Array();
 			var characters = new Array();
+			var food = new Array();
+			var foodX = new Array();
+			var foodY = new Array();
 
-			var randomX = Math.floor(Math.random() * (window.innerWidth - 0 + 1)) + 0;
+			var powerup = document.getElementsByTagName("audio")[0];
+
+			var canvas = document.getElementById('myCanvas');
+			var context = canvas.getContext('2d');
 
 			for (i = 0; i < characterImagesSources; i++) {
 				characterImages[i] = "http://itp.nyu.edu/~jab680/assets/pixel" + [i] + ".png";
 			}
 
 			for (i = 0; i < characterImages.length; i++) {
+
+				var randomX = Math.floor(Math.random() * (window.innerWidth + 1));
+				var randomY = Math.floor(Math.random() * (window.innerHeight + 1));
+
 				characters[i] = document.createElement("img");
 				characters[i].setAttribute("src", characterImages[i]);
 				characters[i].className += "pixelimage";
 				characters[i].id = "pixel" + i;
 				characters[i].style.left = randomX + "px";
-				characters[i].style.top = "400px";
+				characters[i].style.top = randomY + "px";
 			}
+
+			for (i = 0; i < 40; i++) {
+
+				var randomX = Math.floor(Math.random() * (window.innerWidth + 1));
+				var randomY = Math.floor(Math.random() * (window.innerHeight + 1));
+
+				food[i] = document.createElement("div");
+				food[i].className += "pixelFood";
+				food[i].id = "food" + i;
+				food[i].style.left = randomX + "px";
+				food[i].style.top = randomY + "px";
+				document.body.appendChild(food[i]);
+			}
+
+			for (i = 0; i < food.length; i++) {
+				foodX[i] = $("#food" + i).position().left;
+				foodY[i] = $("#food" + i).position().top;
+
+				var changeColors = function() {
+					randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+					$("#food" + i).css("background-color", randomColor);
+				}
+
+				//console.log(foodX[i] + " " + foodY[i]);
+			}
+
+			// var changeColors = function() {
+			// 	var randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+			// 	$("#food" + i).css("background-color", randomColor);
+			// }
+
+			setInterval(changeColors(), 500);
+			setInterval(console.log(randomColor), 500);
 			
 			socket.on('connect', function() {
 				console.log("Connected");
@@ -75,9 +115,7 @@
 
 				for (i = 0; i < data.length; i++) {
 					var oplayerId = i;
-					//console.log("emitting playerId to all: " + oplayerId + " number: " + i);
 					document.body.appendChild(characters[oplayerId]);
-					//console.log("Created character with ID: " + oplayerId);
 				};
 			});
 
@@ -91,25 +129,19 @@
 			// Receive from any event
 			socket.on('otherkeys', function (data) {
 
-				//console.log("Receiving data: ", 'otherkeys', data);
-
-				seeMoves(data.xloc, data.yloc, data.id);
-
-				//console.log("xloc: ", data.xloc, "yloc: ", data.yloc, "id: ", data.id);
+				seeChanges(data.xloc, data.yloc, data.size, data.id);
 
 			});
 
 			var sendKeys = function(xval, yval) {
-				console.log('sendKeys', xval, yval);
 				socket.emit('otherkeys', { 
 					xloc: xval, 
 					yloc: yval, 
-					id: playerId
+					id: playerId, 
+					size: size
+
 				});
 			};
-
-			var canvas = document.getElementById('myCanvas');
-			var context = canvas.getContext('2d');
 
 			document.addEventListener('keydown', function (evt) {
 
@@ -118,7 +150,37 @@
 				var getPosition = function (id) {
 					var p = $("#pixel" + id);
 					loc = p.position();
-				}
+				};
+
+				var getSize = function (id) {
+					var s = $("#pixel" + id);
+					playerSize = s.width();
+				};
+
+				var detectCollision = function (id) {
+
+					var minDist = 10;
+
+					getPosition(id);
+					xloc = loc.left;
+					yloc = loc.top;
+
+					for (i = 0; i < foodX.length; i++) {
+						for (j = 0; j < foodY.length; j++) {
+
+							if (xloc - foodX[i] < minDist && yloc - foodY[j] < minDist && foodX[i] - xloc < minDist && foodY[j] - yloc < minDist) {
+
+								//COLLISION DETECTION HERE
+								$("#pixel" + id).css("width", "+=10");
+								getSize(id);
+								size = playerSize;
+								powerup.play();
+							}
+						}
+					}
+				};
+
+				detectCollision(playerId);
 
 				switch (key) {
 					case 37: //LEFT
@@ -145,27 +207,32 @@
 					yloc = loc.top;
 					break;
 
+					case 32: //SPACE
+					$("#pixel" + playerId).css("width", "+=10");
+					getSize(playerId);
+					size = playerSize;
+
 					//case for JUMP? Remove y navigation?
 				}
 
 				sendKeys(xloc,yloc);
-				moveChar(xloc,yloc);
+				changeChar(xloc,yloc,size);
 
 			}, true);
 	
-			var moveChar = function (xval,yval) {
+			var changeChar = function (xval,yval,widthValue) {
 
 				xval = xloc;
 				yval = yloc;
+				widthValue = size;
 
 			};
 	
-			var seeMoves = function (xval,yval,id) {
-
-				//console.log("seeMoves: " + xval + " " + yval + " " + id);
+			var seeChanges = function (xval,yval,widthValue,id) {
 
 				$("#pixel" + id).css("left", xval);
 				$("#pixel" + id).css("top", yval);
+				$("#pixel" + id).css("width", widthValue);
 
 			};
 
@@ -176,9 +243,11 @@
 
 	<body onload="init();">
 
-		<div id="canvasContainer"> 
-			<canvas id="myCanvas" width="100" height="100"></canvas>
-		</div>
-	
+		<canvas id="myCanvas" width="100" height="100"></canvas>
+
+		<audio id="powerup">
+			<source src="http://itp.nyu.edu/~jab680/assets/powerup.wav" type="audio/wav">
+		</audio>
+
 	</body>
 </html>
