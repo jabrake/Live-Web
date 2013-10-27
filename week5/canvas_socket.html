@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<title>Bildpunkt</title>
 		<style type="text/css">
 			.pixelimage {
 				position: absolute;
@@ -84,21 +85,18 @@
 				foodX[i] = $("#food" + i).position().left;
 				foodY[i] = $("#food" + i).position().top;
 
-				var changeColors = function() {
-					randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
-					$("#food" + i).css("background-color", randomColor);
-				}
-
 				//console.log(foodX[i] + " " + foodY[i]);
 			}
 
-			// var changeColors = function() {
-			// 	var randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
-			// 	$("#food" + i).css("background-color", randomColor);
-			// }
+			var changeColors = function() {
+				for (i = 0; i < food.length; i++) {
+					randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+					$("#food" + i).css("background-color", randomColor);
+					console.log("changed colors!");
+				}
+			}
 
-			setInterval(changeColors(), 500);
-			setInterval(console.log(randomColor), 500);
+			setInterval(changeColors, 100);
 			
 			socket.on('connect', function() {
 				console.log("Connected");
@@ -159,25 +157,51 @@
 
 				var detectCollision = function (id) {
 
-					var minDist = 10;
+					var minDist = 5;
 
 					getPosition(id);
 					xloc = loc.left;
 					yloc = loc.top;
 
-					for (i = 0; i < foodX.length; i++) {
-						for (j = 0; j < foodY.length; j++) {
+					for (k = 0; k < food.length; k++) {
+						var x = $("#food" + k).position().left;
+						var y = $("#food" + k).position().top;
 
-							if (xloc - foodX[i] < minDist && yloc - foodY[j] < minDist && foodX[i] - xloc < minDist && foodY[j] - yloc < minDist) {
+						if (xloc - x < minDist && yloc - y < minDist && x - xloc < minDist && y - yloc < minDist) {
+
+								//console.log(foodX[i].id);
 
 								//COLLISION DETECTION HERE
 								$("#pixel" + id).css("width", "+=10");
 								getSize(id);
 								size = playerSize;
 								powerup.play();
+
+								food.splice(k, 1);
+
+								document.body.removeChild(food[k])
+
+								
 							}
-						}
 					}
+
+					// for (i = 0; i < foodX.length; i++) {
+					// 	for (j = 0; j < foodY.length; j++) {
+
+					// 		if (xloc - foodX[i] < minDist && yloc - foodY[j] < minDist && foodX[i] - xloc < minDist && foodY[j] - yloc < minDist) {
+
+					// 			//console.log(foodX[i].id);
+
+					// 			//COLLISION DETECTION HERE
+					// 			$("#pixel" + id).css("width", "+=10");
+					// 			getSize(id);
+					// 			size = playerSize;
+					// 			powerup.play();
+
+
+					// 		}
+					// 	}
+					// }
 				};
 
 				detectCollision(playerId);
@@ -211,6 +235,7 @@
 					$("#pixel" + playerId).css("width", "+=10");
 					getSize(playerId);
 					size = playerSize;
+					powerup.play();
 
 					//case for JUMP? Remove y navigation?
 				}

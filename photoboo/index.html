@@ -1,0 +1,196 @@
+<html>
+	<head>
+		<title>Photo Boo!</title>
+
+		<style type="text/css">
+
+			html { 
+  				background-color: #000000;
+			}
+
+			body {
+				margin: 0px;
+			}
+
+			.photos {
+				width: 75%;
+				height: auto;
+				padding: 10px;
+				border: 5px solid #ef6f18;
+				margin: 5px 0px 5px 0px;
+				background-color: #000000;
+			}
+
+			#topContainer {
+				position: fixed;
+				top: 0px;
+				width: 100%;
+				height: 300px;
+				margin: 0px auto;
+				z-index: 1;
+			}
+
+			#background {
+				width: 100%;
+				height: auto;
+/*				position: relative;
+*/				/*z-index: 1;*/
+			}
+
+			#container1 {
+				margin: 30px auto 0px;
+				width: 100%;
+				top: 300px;
+				position: absolute;
+			}
+
+			#column1 {
+				float: left;
+				width: 25%;
+				margin: 0px auto;
+				position: relative;
+				left: 0%;
+				overflow: hidden;
+				text-align: center;
+			}
+
+			#column2 {
+				float: left;
+				width: 25%;
+				margin: 0px auto;
+				position: absolute;
+				left: 25%;
+				overflow: hidden;
+				text-align: center;
+			}
+
+			#column3 {
+				float: left;
+				width: 25%;
+				margin: 0px auto;
+				position: absolute;
+				left: 50%;
+				overflow: hidden;
+				text-align: center;
+			}
+
+			#column4 {
+				float: left;
+				width: 25%;
+				margin: 0px auto;
+				position: absolute;
+				left: 75%;
+				overflow: hidden;
+				text-align: center;
+			}
+
+		</style>
+	</head>
+
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script type="text/javascript">
+
+	var init = function() {
+
+		//Photo counter
+		var counter = 1;
+		//Column counter
+		var columnCounter = 2;
+
+		var url = "https://dl.dropboxusercontent.com/u/27919390/site/img" + counter + ".jpg";
+		var mainUrl = "https://dl.dropboxusercontent.com/u/27919390/site/img0.jpg";
+
+		var photos = new Array();
+
+		//Create  + append first photo
+		photos[0] = document.createElement('img');
+		photos[0].setAttribute("src", mainUrl);
+		photos[0].id = "picture0";
+		photos[0].className += "photos";
+
+		column1.appendChild(photos[0]);
+
+		setInterval(function () {
+			console.log("about to ping URL: " + url);
+
+			$.get(url)
+
+    			.done(function() {
+        		// If image exists, create new element, add to array, and append to DOM
+        			photos[counter] = document.createElement('img');
+        			photos[counter].setAttribute("src", url);
+        			photos[counter].id = "picture" + counter;
+        			photos[counter].className += "photos";
+
+        			if (columnCounter === 1) {
+        				var column1 = document.getElementById('column1');
+        				
+        				column1.insertBefore(photos[counter], photos[counter-4]);
+        			}
+
+        			else if (columnCounter === 2) {
+        				var column2 = document.getElementById('column2');
+
+        				if (counter === 1) {
+        					column2.appendChild(photos[counter]);
+        				} else {
+        					column2.insertBefore(photos[counter], photos[counter-4]);
+        				} 
+        			}
+
+        			else if (columnCounter === 3) {
+        				var column3 = document.getElementById('column3');
+
+        				if (counter === 2) {
+        					column3.appendChild(photos[counter]);
+        				} else {
+        					column3.insertBefore(photos[counter], photos[counter-4]);
+        				}        					
+        			}
+
+        			else if (columnCounter === 4) {
+        				var column4 = document.getElementById('column4');
+
+        				if (counter === 3) {
+        					column4.appendChild(photos[counter]);
+        				} else {
+        					column4.insertBefore(photos[counter], photos[counter-4]);
+        				}        					
+        			}
+
+        			counter++;
+        			columnCounter++;
+
+        			//Reset column counter so after every 4 pictures, next picture added is to column 1
+        			if (columnCounter > 4) {
+        				columnCounter = 1;
+        			}
+
+
+					url = "https://dl.dropboxusercontent.com/u/27919390/site/img" + counter + ".jpg";
+
+				}).fail(function() { 
+        		// If image doesn't exist, do nothing
+        			return false;
+        		});
+        	//Run get url every half a second
+			}, 3000);
+	};
+
+	</script>
+
+	<body onload="init();">
+
+		<div id="topContainer">
+			<img id="background" src="https://dl.dropboxusercontent.com/u/27919390/site/halloween_back.png">
+		</div>
+		<div id="container1">
+			<div id="column1"></div>
+			<div id="column2"></div>
+			<div id="column3"></div>
+			<div id="column4"></div>
+		</div>
+
+	</body>
+
+</html>
