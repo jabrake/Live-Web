@@ -1,0 +1,240 @@
+
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, user-scalable=no">
+
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+
+    <style>
+        body, html {
+            margin: 0px;
+            padding: 0px;
+            border: 10px solid #000000;
+
+        }
+
+        #thecanvas {
+            padding-left: 0;
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            border: 10px solid #000000;
+        }
+
+    </style>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+
+    var init = function() {
+
+        var context;
+        var sessionId;
+        var playerId;
+        var width;
+        var height; 
+        var xPos = 0; 
+        var yPos = 0;
+        var radius = 30;
+        var mouseX;
+        var mouseY;
+        var point = 0;
+        var thecanvas;
+        var cursorUrl = "http://itp.nyu.edu/~jab680/assets/cursor.png";
+        var cursorImage;
+        var counter = 0;
+
+        var arduinoUrlOn = "http://128.122.98.22/arduino/servoMode/1";
+        var arduinoUrlOff = "http://128.122.98.22/arduino/servoMode/0";
+
+        // var browserWidth = window.innerWidth;
+        // var browserHeight = window.innerHeight;
+
+        thecanvas = document.getElementById("myCanvas");
+        context = thecanvas.getContext('2d');
+        document.body.appendChild(thecanvas);
+
+        width = 2540;
+        height = 806;
+
+        thecanvas.width = width;
+        thecanvas.height = height;
+
+        var cursorImage = new Image();
+        cursorImage.src = cursorUrl;
+        cursorImage.id = "cursor";
+
+        var userlist = [];
+
+     	var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
+
+     	socket.on('connect', function(){
+        	sessionId = socket.socket.sessionid;
+        	console.log("Connected, session ID is : " + sessionId);
+            socket.emit('message');
+
+            document.documentElement.style.cursor = 'url("http://itp.nyu.edu/~jyp323/ju/wp-content/uploads/2013/11/favicon1.ico"), auto';
+      	});
+
+        socket.on('init', function (data){
+
+            console.log("User ID is: " + data);
+
+            playerId = data;
+
+            userlist.push({
+                playerId: data, 
+                x: 10, 
+                y: 0, 
+                score: 0,
+                onCircle: false
+            });
+
+            for (var i = 0; i < userlist.length; i++){
+                context.drawImage(cursorImage, userlist[i].x, userlist[i].y);
+            }
+        });
+
+        socket.on('xPos', function (data) {
+            //console.log("xPos: " + data);
+            xPos = data;
+        });
+
+        socket.on('yPos', function (data) {
+            //console.log("yPos: " + data);
+            yPos = data;
+        });
+
+        var draw = function(){
+            clearCanvas();
+            drawBall();
+            // sendCounter();
+        };
+
+        var drawBall = function(){
+            context.beginPath();
+            context.fillStyle = "#000000";
+            context.arc(xPos, yPos, radius, 0, Math.PI*2, true);
+            context.closePath();
+            context.fill();
+
+        };
+
+        var clearCanvas = function() {
+            context.clearRect(0, 0, width, height);
+        };
+
+        var intervalId = setInterval(draw, 30); 
+
+        function mouseMovePoints(event){
+
+            mouseX = event.clientX;
+            mouseY = event.clientY;
+
+            // for (var i = 0; i < userlist.length; i++){
+
+                if ((mouseX < xPos+30 && mouseX > xPos-30) && (mouseY > yPos-30 && mouseY < yPos+30)) {
+                    // userlist[playerId].score++;
+
+                    // console.log(userlist[playerId].score);
+
+                    // console.log("detection!");
+
+                    socket.emit('playerscore');
+                        // playerScore: userlist[playerId].score,
+                        //playerId: userlist[i].playerId
+                    
+
+                // for (var i = 0; i < userlist.length; i++) {
+                //     if (userlist[i].onCircle === true) {
+                //         counter = 1;
+                //     } else {
+                //         counter = 0;
+                //     }
+
+                //     console.log(counter);
+
+                //     socket.emit('counter', {
+                //         counter: counter
+                //     });
+                // }
+            }
+
+
+            sendCoords(mouseX, mouseY, playerId);
+            seeOtherUsers();
+        };
+
+        // function sendCounter() {
+        //     //for (var i = 0; i < userlist.length; i++) {
+        //       //      if (userlist[i].onCircle === true) {
+        //         //        counter = 1;
+        //           //  } else {
+        //             //    counter = 0;
+        //             //}
+
+        //             //console.log(counter);
+
+                //     socket.emit('counter', {
+                //         userlist: userlist
+                //     });
+                // }
+        // };
+
+        // setTimeout(sendCounter, 30);
+
+        thecanvas.addEventListener('mousemove', mouseMovePoints, false);
+
+        var sendCoords = function(xval, yval, id) {
+            socket.emit('mousecoords', {
+                xloc: xval,
+                yloc: yval,
+                myId: id
+            });
+        };
+
+        socket.on('mousecoords', function (data) {
+
+            // console.log(data);
+
+            // userlist[data.myId].x = data.xloc;
+            // userlist[data.myId].y = data.yloc;
+
+            seeOtherUsers(data.xloc, data.yloc, data.myId);
+        });
+
+        var seeOtherUsers = function(xval, yval, id) {
+            //console.log(userlist[id]);
+
+            for (var i = 0; i < userlist.length; i++) {
+
+                userlist[i].x = xval;
+                userlist[i].y = yval;
+
+                context.drawImage(cursorImage, userlist[i].x, userlist[i].y);
+            }
+            //console.log("xval: " + xval + " yval: " + yval + " id: " + id);
+        };
+
+        socket.on('threshold', function () {
+            // console.log(data);
+
+            $.get(arduinoUrlOn)
+
+                .done(function() {
+                    console.log("Sent data to Arduino!");
+
+                }).fail(function (){
+                    console.log("failed to send data!");
+                });
+        });
+    };
+
+    </script>
+</head>
+<body onload ="init()">
+    <canvas id="myCanvas"></canvas> 
+</body>
+</html>

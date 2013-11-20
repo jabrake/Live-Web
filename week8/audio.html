@@ -1,0 +1,98 @@
+<html>
+	<head>
+		<script type="text/javascript">
+			var gainNode = null;
+			var frequencies = null;
+			var analyser = null;
+			
+			function volumeChanged(e) {
+				console.log(e);
+				gainNode.gain.value = e.target.value;
+			};
+					
+			var init = function() {
+				console.log("init");
+				
+				// These help with cross-browser functionality
+				window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+				navigator.getUserMedia({audio: true}, webRTCInit, function(error) {alert(error);});
+			};
+			
+			var webRTCInit = function(stream) {
+				// Fixes prefix issues
+			    window.AudioContext = window.AudioContext||window.webkitAudioContext;
+			
+				// The context is the base for the API.
+				var audioContext = new AudioContext();
+			
+				gainNode = audioContext.createGain();
+				gainNode.gain.value = .1;
+						
+				// We can load an audio file by using an audio tag
+				// var audiotoload = document.getElementById("audiotoplay");	
+				// var audioSource = audioContext.createMediaElementSource(audiotoload);
+				var audioSource = audioContext.createMediaStreamSource(stream);
+				
+				// To simply play it, we can connect it to the "destination" or default output of the context
+				audioSource.connect(gainNode); // Connect to the default output
+				gainNode.connect(audioContext.destination);
+				//audiotoload.play();	
+				
+				// FFT
+				analyser = (analyser || audioContext.createAnalyser());
+				audioSource.connect(analyser);
+				frequencies = new Uint8Array(analyser.frequencyBinCount);
+				analyser.getByteFrequencyData(frequencies);
+				
+				for (var i = 0; i < frequencies.length; i++) {
+					console.log(frequencies[i]);
+				}
+
+				window.requestAnimationFrame(animate);
+				
+				var volumeElement = document.getElementById('volume');
+				console.log(volumeElement);
+				volumeElement.addEventListener("change", volumeChanged);
+			};
+
+			var animate = function() {
+				
+				analyser.getByteFrequencyData(frequencies);
+
+				var mycanvas = document.getElementById('mycanvas');
+				var mycontext = mycanvas.getContext('2d');
+				mycontext.fillStyle = "#00ff00";
+				mycontext.fillRect(10,10,10,10);
+				mycontext.clearRect(0,0,mycanvas.width, mycanvas.height);
+				
+				for (var i = 0; i < frequencies.length; i++)
+				{
+					mycontext.fillRect(i,mycanvas.height-frequencies[i], 2, mycanvas.height);	
+					//console.log(frequencies[i]);
+				}	
+				
+				window.requestAnimationFrame(animate);		
+			};
+			
+			window.addEventListener('load', init, false);
+		</script>
+	</head>
+	<body>
+		<audio controls id="audiotoplay">
+			<source src="audio.ogg" type="audio/ogg">
+		</audio>
+		<input type="range" name="volume" id="volume" min="0" max="2" step=".1">
+		<canvas id="mycanvas" width="600" height="600"></canvas>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+

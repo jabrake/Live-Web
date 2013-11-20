@@ -1,0 +1,84 @@
+<html>
+	<head>
+		<script src="recorder.js"></script>
+		<script type="text/javascript">										
+
+			// var recorder = null;
+			// var audiosource = null;
+					
+			var init = function() {
+				
+				// These help with cross-browser functionality
+				window.URL = window.URL || window.webkitURL || window.mozURL || window.msURL;
+				navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+				navigator.getUserMedia({audio: true}, RecordingInit, function(error) {alert(error);});
+
+				// if we have the method
+				// if (navigator.getUserMedia) {
+				// 	navigator.getUserMedia({audio: true}, RecordingInit, function(stream) {
+	
+
+				// 		}, function(error) {alert("Failure " + error.code);
+				// 	});
+				// }
+			};
+
+			var RecordingInit = function(stream) {
+
+				window.AudioContext = window.AudioContext||window.webkitAudioContext;
+
+				// var canvas = document.getElementById('mycanvas');
+				// var context = canvas.getContext('2d');
+
+				var audioContext= new AudioContext();
+				var audioSource = audioContext.createMediaStreamSource(stream);
+
+				var recorder;
+				recorder = new Recorder(audioSource); // Once we have the stream...	
+							
+				var startRecording = function(button) {
+					recorder && recorder.record();
+				};
+
+				var stopRecording = function(button) {
+					recorder && recorder.stop();
+						
+					recorder.exportWAV(function(blob) {
+						var url = URL.createObjectURL(blob);
+						var au = document.createElement('audio');
+						var hf = document.createElement('a');
+
+						au.controls = true;
+						au.src = url;
+						hf.href = url;
+						hf.download = new Date().toISOString() + '.wav';
+						hf.innerHTML = hf.download;
+							document.body.appendChild(au);
+							document.body.appendChild(hf);
+						});				
+				};
+			};
+			
+			//window.addEventListener('load', init, false);
+
+		</script>
+	</head>
+	<body onload="init();">
+
+		<button onclick="startRecording(this);">record</button>
+		<button onclick="stopRecording(this);">stop</button>
+
+		<canvas id="mycanvas" width="600" height="600"></canvas>
+
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
