@@ -1,0 +1,500 @@
+<!doctype html>
+<html xmlns:og="http://ogp.me/ns#">
+	<head>
+		<meta charset="utf-8">
+	<title>Pixel Playground</title>
+
+	<style>
+		html, body { 
+			margin:0; padding:0; 
+		}
+
+		#demoCanvas, #debugCanvas {
+			z-index: 1;
+		}
+
+		#debugCanvas {
+			z-index: 2;
+			display: none;
+			position: absolute;
+			left:0;
+		}
+
+		#paused {
+			z-index: 3;
+			width: 500px;
+			background-color: #FFF;
+			display: none;
+		}
+
+		#demoCanvas {
+			border: 1px solid #000;
+		}
+
+		.button {
+			position: absolute;
+			top: 580px;
+			width: 250px;
+			height: 25px;
+			background-color: #5fd644;
+			cursor: pointer;
+			text-align: center;
+			padding-top:5px;
+		}
+
+	</style>
+	</head>
+<body>
+
+	<canvas id="demoCanvas"></canvas>
+	<canvas width="500" height="500" id="debugCanvas"></canvas>
+	<div id="paused">Paused. Click to resume.</div><br/>
+	<div id="debug" class="button">Show/Hide Debug</div>
+
+	<ul>
+  		<li>alpha: <span id="alpha"></span></li>
+    	<li>beta: <span id="beta"></span></li>
+    	<li>gamma: <span id="gamma"></span></li>
+	</ul>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript" src="http://itp.nyu.edu/~jab680/easel/libs/jquery-1.7.1.min.js"></script>
+<script type="text/javascript" src="http://itp.nyu.edu/~jab680/easel/libs/easel.js"></script>
+<script type="text/javascript" src="http://itp.nyu.edu/~jab680/easel/libs/Box2dWeb-2.1.a.3.min.js"></script>
+<script type="text/javascript">
+
+var luxanimals = {};
+
+luxanimals.demo = (function() {
+
+	// Box2d vars
+	var b2Vec2 = Box2D.Common.Math.b2Vec2;
+	var b2BodyDef = Box2D.Dynamics.b2BodyDef;
+	var b2Body = Box2D.Dynamics.b2Body;
+	var b2FixtureDef = Box2D.Dynamics.b2FixtureDef;
+	var b2Fixture = Box2D.Dynamics.b2Fixture;
+	var b2World = Box2D.Dynamics.b2World;
+	var b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape;
+	var b2CircleShape = Box2D.Collision.Shapes.b2CircleShape;
+	var b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
+
+	// demo vars
+	var canvas, context, debugCanvas, debugContext, stage;
+	var birdDelayCounter = 0; // counter for delaying creation of birds
+	var focused = true;
+
+	var moveLeft = false;
+	var moveRight = false;
+	var bodies = [];
+	var actors = [];
+	var impulseLeft, impulseRight, impulseUp, impulseDown;
+	var removeActor;
+	var world, actor, skin;
+	var alpha, beta, gamma, acc, maxAcc;
+	var canvasWidth, canvasHeight;
+
+	$('#debug').on('click', function() { $('#debugCanvas').toggle(); });  // toggle debug view
+
+	$(document).ready(function() {
+		// setup functions to run once page is loaded
+		setup.canvas();
+		setup.ticker();
+		box2d.setup();
+		window.onfocus = onFocus;
+		window.onblur = onBlur;
+	});
+
+	function onFocus() { focused = true; box2d.pauseResume(false); $('#paused').css({'display':'none'}); }
+	function onBlur() { focused = false; box2d.pauseResume(true); $('#paused').css({'display':'block'}); }
+
+	var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
+	var socketId = null;
+
+	socket.on('connect', function() {
+		socketId = socket.socket.sessionid;
+	});
+
+	socket.on('players', function (data) {
+		if (data.type == "display") {
+			console.log('this browser is the main display');
+		}
+	});
+
+	socket.on('createPlayer', function() {
+		birds.spawn();
+	});
+
+	socket.on('move', function (data) {
+		//console.log(data);
+
+		var number = data.id.slice(6);
+		// console.log(number); 
+		movePlayer(number, data.direction);
+	});
+
+	socket.on('leave', function (data) {
+
+		//var number = data.id.slice(6);
+
+		var position = data.id;
+		removeActor(position.GetUserData());
+		position.SetUserData(null);
+		world.DestroyBody(position);
+		bodies.splice(position, 1);
+
+		// document.body.removeChild(bodies[data]);
+		console.log("Removed character with ID: " + position);
+
+	});
+
+	var movePlayer = function(player, direction) {
+		if (direction == "left") {
+			impulseLeft(bodies[player]);
+		}
+
+		if (direction == "right") {
+			impulseRight(bodies[player]);
+		}
+
+		if (direction == "up") {
+			impulseUp(bodies[player]);
+		}
+	}
+
+	document.addEventListener('keydown', function (evt) {
+
+		var key = event.which;
+
+		switch (key) {
+			case 32:
+			birds.spawn();
+			break;
+
+			case 37: //LEFT
+
+			for (var i = 0; i < bodies.length; i++) {
+				impulseLeft(bodies[i]);
+			}
+
+			case 38: //UP
+
+			for (var i = 0; i < bodies.length; i++) {
+				impulseUp(bodies[i]);
+			}
+
+			break; //RIGHT
+
+			case 39:
+
+			for (var i = 0; i < bodies.length; i++) {
+				impulseRight(bodies[i]);
+			}
+
+			break;
+
+			case 40: //DOWN
+
+			for (var i = 0; i < bodies.length; i++) {
+				impulseDown(bodies[i]);
+			}
+		}
+
+	}, true);
+
+	var handleOrientationEvent = function(e) {
+		alpha = e.alpha;
+		beta = e.beta;
+		gamma = e.gamma;
+
+		//console.log('a: ' + alpha + 'b: ' + beta + 'g: ' + gamma);
+		var a = document.getElementById('alpha');
+		a.innerHTML = alpha;
+		var b = document.getElementById('beta');
+		b.innerHTML = beta;
+		var g = document.getElementById('gamma');
+		g.innerHTML = gamma;
+
+		if (gamma > 25) {
+			for (var i = 0; i < bodies.length; i++) {
+				impulseRight(bodies[i]);
+			}
+		}
+
+		if (gamma < -25) {
+			for (var i = 0; i < bodies.length; i++) {
+				impulseLeft(bodies[i]);
+			}
+		}
+	}
+
+	var handleMotionEvent = function(e) {
+		acc = e.acceleration;
+		maxAcc = Math.max(acc.x, acc.y, acc.z);
+
+		if (maxAcc > 5.0) {
+			//JUMP
+		}
+	}
+
+	window.addEventListener('deviceorientation', handleOrientationEvent, false);
+	window.addEventListener('devicemotion', handleMotionEvent, false);
+
+/* ------ SETUP ------- */
+// initial setup of canvas, contexts, and render loop
+
+	var setup = (function() {
+
+		var canvas = function() {
+			canvas = document.getElementById('demoCanvas');
+			debugCanvas = document.getElementById('debugCanvas');
+			context = canvas.getContext('2d');
+			debugContext = debugCanvas.getContext('2d');
+			stage = new Stage(canvas);
+			stage.snapPixelsEnabled = true;
+
+			canvasWidth = window.innerWidth;
+			canvasHeight = window.innerHeight;
+
+			context.canvas.width = canvasWidth;
+			context.canvas.height = canvasHeight;
+		}
+
+		var ticker = function() {
+			Ticker.setFPS(30);
+			//Ticker.useRAF = true;
+			Ticker.addListener(luxanimals.demo);  // looks for "tick" function within the luxanimals.demo object
+		}
+
+		return {
+			canvas: canvas,
+			ticker: ticker
+		}
+	})();
+
+/* ------- Birds --------- */
+// bitmap birds to be sent to box2d
+
+	var birds = (function() {
+
+		var spawn = function() {
+			var birdBMP = new Bitmap("http://itp.nyu.edu/~jab680/assets/char1.png");
+			birdBMP.x = Math.round(Math.random()*1400);
+			birdBMP.y = -30;
+			birdBMP.regX = 25;   // important to set origin point to center of your bitmap
+			birdBMP.regY = 11; 
+			birdBMP.snapToPixel = true;
+			birdBMP.mouseEnabled = false;
+			stage.addChild(birdBMP);
+			box2d.createBird(birdBMP);
+		}
+
+		return {
+			spawn: spawn
+		}
+	})();
+
+/* ------- Box2D --------- */
+// handles all physics movement
+
+	var box2d = (function() {
+
+		// important box2d scale and speed vars
+		var SCALE = 30, STEP = 20, TIMESTEP = 1/STEP;
+
+		// var world;
+		var lastTimestamp = Date.now();
+		var fixedTimestepAccumulator = 0;
+		var bodiesToRemove = [];
+		// var actors = [];
+		// var bodies = [];
+
+		// box2d world setup and boundaries
+		var setup = function() {
+			world = new b2World(new b2Vec2(0,10), true);
+			addDebug();
+
+			// boundaries - floor
+			var floorFixture = new b2FixtureDef;
+			floorFixture.density = 1;
+			floorFixture.restitution = 0;
+			floorFixture.shape = new b2PolygonShape;
+			floorFixture.shape.SetAsBox(1440 / SCALE, 10 / SCALE);
+			var floorBodyDef = new b2BodyDef;
+			floorBodyDef.type = b2Body.b2_staticBody;
+			floorBodyDef.position.x = -25 / SCALE;
+			floorBodyDef.position.y = 779 / SCALE;
+			var floor = world.CreateBody(floorBodyDef);
+			floor.CreateFixture(floorFixture);
+
+			// boundaries - left
+			var leftFixture = new b2FixtureDef;
+			leftFixture.shape = new b2PolygonShape;
+			leftFixture.shape.SetAsBox(10 / SCALE, 1100 / SCALE);
+			var leftBodyDef = new b2BodyDef;
+			leftBodyDef.type = b2Body.b2_staticBody;
+			leftBodyDef.position.x = -9 / SCALE;
+			leftBodyDef.position.y = -25 / SCALE;
+			var left = world.CreateBody(leftBodyDef);
+			left.CreateFixture(leftFixture);
+
+			// boundaries - right
+			var rightFixture = new b2FixtureDef;
+			rightFixture.shape = new b2PolygonShape;
+			rightFixture.shape.SetAsBox(10 / SCALE, 1100 / SCALE);
+			var rightBodyDef = new b2BodyDef;
+			rightBodyDef.type = b2Body.b2_staticBody;
+			rightBodyDef.position.x = 1439 / SCALE;
+			rightBodyDef.position.y = -25 / SCALE;
+			var right = world.CreateBody(rightBodyDef);
+			right.CreateFixture(rightFixture);
+		}
+
+		// box2d debugger
+		var addDebug = function() {
+			var debugDraw = new b2DebugDraw();
+			debugDraw.SetSprite(debugContext);
+			debugDraw.SetDrawScale(SCALE);
+			debugDraw.SetFillAlpha(0.7);
+			debugDraw.SetLineThickness(1.0);
+			debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+			world.SetDebugDraw(debugDraw);
+		}
+
+		// actor object - this is responsible for taking the body's position and translating it to your easel display object
+		var actorObject = function(body, skin) {
+			this.body = body;
+			this.skin = skin;
+			this.update = function() {  // translate box2d positions to pixels
+				this.skin.rotation = this.body.GetAngle() * (180 / Math.PI);
+				this.skin.x = this.body.GetWorldCenter().x * SCALE;
+				this.skin.y = this.body.GetWorldCenter().y * SCALE;
+			}
+			actors.push(this);
+		}
+
+		// create bird body shape and assign actor object
+		var createBird = function(skin) {
+			var birdFixture = new b2FixtureDef;
+			birdFixture.density = 1;
+			birdFixture.restitution = 0;
+			// birdFixture.shape = new b2CircleShape(24 / SCALE);
+			birdFixture.shape = new b2PolygonShape;
+			birdFixture.shape.SetAsBox(25 / SCALE, 11 / SCALE);
+			var birdBodyDef = new b2BodyDef;
+			birdBodyDef.type = b2Body.b2_dynamicBody;
+			birdBodyDef.position.x = skin.x / SCALE;
+			birdBodyDef.position.y = skin.y / SCALE;
+			var bird = world.CreateBody(birdBodyDef);
+			bird.CreateFixture(birdFixture);
+
+			// assign actor
+			actor = new actorObject(bird, skin);
+			bird.SetUserData(actor);  // set the actor as user data of the body so we can use it later: body.GetUserData()
+			bodies.push(bird);
+		}
+
+		impulseLeft = function(body) {
+			this.body = body;
+			this.body.ApplyImpulse(new b2Vec2(-1, 0), this.body.GetWorldCenter());
+		}
+
+		impulseRight = function(body) {
+			this.body = body;
+			this.body.ApplyImpulse(new b2Vec2(1, 0), this.body.GetWorldCenter());
+		}
+
+		impulseUp = function(body) {
+			this.body = body;
+			this.body.ApplyImpulse(new b2Vec2(0, -2), this.body.GetWorldCenter());
+		}
+
+		impulseDown = function(body) {
+			this.body = body;
+			this.body.ApplyImpulse(new b2Vec2(0, 5), this.body.GetWorldCenter());
+		}
+
+		// remove actor and it's skin object
+		removeActor = function(actor) {
+			stage.removeChild(actor.skin);
+			actors.splice(actors.indexOf(actor),1);
+		}
+
+		// box2d update function. delta time is used to avoid differences in simulation if frame rate drops
+		var update = function() {
+			var now = Date.now();
+			var dt = now - lastTimestamp;
+			fixedTimestepAccumulator += dt;
+			lastTimestamp = now;
+			while(fixedTimestepAccumulator >= STEP) {
+				// remove bodies before world timestep
+				for(var i=0, l=bodiesToRemove.length; i<l; i++) {
+					removeActor(bodiesToRemove[i].GetUserData());
+					bodiesToRemove[i].SetUserData(null);
+					world.DestroyBody(bodiesToRemove[i]);
+				}
+				bodiesToRemove = [];
+
+				// update active actors
+				for(var i=0, l=actors.length; i<l; i++) {
+					actors[i].update();
+				}
+
+				world.Step(TIMESTEP, 10, 10);
+
+				fixedTimestepAccumulator -= STEP;
+				world.ClearForces();
+	   			world.m_debugDraw.m_sprite.graphics.clear();
+	   			world.DrawDebugData();
+	   			if(bodies.length > 30) {
+	   				bodiesToRemove.push(bodies[0]);
+	   				bodies.splice(0,1);
+	   			}
+			}
+		}
+
+		var pauseResume = function(p) {
+			if(p) { TIMESTEP = 0;
+			} else { TIMESTEP = 1/STEP; }
+			lastTimestamp = Date.now();
+		}
+
+		return {
+			setup: setup,
+			update: update,
+			createBird: createBird,
+			pauseResume: pauseResume
+		}
+	})();
+
+/* ------- UPDATE -------- */
+// main update loop for rendering assets to canvas
+
+	var tick = function(dt, paused) {
+		if(focused) {
+			box2d.update();
+			stage.update();
+
+			//console.log(moveLeft);
+
+			birdDelayCounter++;
+			if(birdDelayCounter % 10 === 0) {  // delay so it doesn't spawn a bird on every frame
+				birdDelayCounter = 0;
+				// birds.spawn();
+			}
+		}
+	}
+
+/* ------- GLOBAL -------- */
+// main global functions
+
+	return {
+		tick: tick
+	}
+
+
+
+}());
+
+</script>
+</body>
+</html>

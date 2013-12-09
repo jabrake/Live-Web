@@ -1,0 +1,85 @@
+<!doctype html>
+<html xmlns:og="http://ogp.me/ns#">
+	<head>
+		<meta charset="utf-8">
+	<title>Mobile Controller</title>
+
+	<style>
+		html, body { 
+			margin:0; padding:0; 
+		}
+
+	</style>
+	</head>
+
+<body>
+
+	<div id="log"></div>
+
+	<ul>
+  		<li>alpha: <span id="alpha"></span></li>
+    	<li>beta: <span id="beta"></span></li>
+    	<li>gamma: <span id="gamma"></span></li>
+	</ul>
+
+<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+<script type="text/javascript">
+	
+	var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
+	var socketId = null;
+	var player = null;
+
+	socket.on('connect', function() {
+		socketId = socket.socket.sessionid;
+		socket.emit('playerConnect');
+	});
+
+	socket.on('players', function (data) {
+		if (data.socketId === socketId) {
+			player = data.type;
+			document.getElementById("log").innerHTML = "<h1>you are " + player + "</h1>";
+			// socket.emit('playerConnect', {"player": player});
+		}
+	});
+
+	var sendMove = function(direction) {
+		socket.emit('move', {"id": player, "direction": direction});
+	}
+
+	var handleOrientationEvent = function(e) {
+		alpha = e.alpha;
+		beta = e.beta;
+		gamma = e.gamma;
+
+		//console.log('a: ' + alpha + 'b: ' + beta + 'g: ' + gamma);
+		var a = document.getElementById('alpha');
+		a.innerHTML = alpha;
+		var b = document.getElementById('beta');
+		b.innerHTML = beta;
+		var g = document.getElementById('gamma');
+		g.innerHTML = gamma;
+
+		if (gamma > 60) {
+			sendMove('right');
+		}
+
+		if (gamma < -60) {
+			sendMove('left');
+		}
+	}
+
+	var handleMotionEvent = function(e) {
+		acc = e.acceleration;
+		maxAcc = Math.max(acc.x, acc.y, acc.z);
+
+		if (acc.z > 5.0) {
+			sendMove('up');
+		}
+	}
+
+	window.addEventListener('devicemotion', handleMotionEvent, false);
+	window.addEventListener('deviceorientation', handleOrientationEvent, false);
+
+</script>
+</body>
+</html>
