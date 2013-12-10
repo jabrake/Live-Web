@@ -1,26 +1,67 @@
-<!doctype html>
-<html xmlns:og="http://ogp.me/ns#">
+<!DOCTYPE html>
+<html>
 	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=1" />
 		<meta charset="utf-8">
-	<title>Mobile Controller</title>
 
-	<style>
-		html, body { 
-			margin:0; padding:0; 
-		}
+		<title>Mobile Controller</title>
 
-	</style>
+		<style>
+
+			html, body { 
+				margin: 0; 
+				padding: 0; 
+			}
+
+			#container {
+				margin: 0;
+				padding: 0;
+				text-align: center;
+			}
+
+			#log {
+				margin: auto;
+				width: 100%;
+			}
+
+			#yourchar {
+				margin: auto;
+				width: 100%;
+			}
+
+			#arrow {
+				margin: auto;
+				width: 100%;
+			}
+
+		</style>
 	</head>
 
 <body>
 
-	<div id="log"></div>
+	<div id="container">
 
-	<ul>
-  		<li>alpha: <span id="alpha"></span></li>
-    	<li>beta: <span id="beta"></span></li>
-    	<li>gamma: <span id="gamma"></span></li>
-	</ul>
+		<div id="log"></div>
+		<img id="yourchar"></img>
+		<img id="arrow"></img>
+
+		
+
+		<ul>
+	  		<li>alpha: <span id="alpha"></span></li>
+	    	<li>beta: <span id="beta"></span></li>
+	    	<li>gamma: <span id="gamma"></span></li>
+	    	<li>Z acc: <span id="accz"></span></li>
+	    	<li>touches: <span id="touch-count"></span></li>
+		</ul>
+
+		
+
+	</div>
+
+	<audio id="jump">
+		<source src="http://itp.nyu.edu/~jab680/assets/jump.wav" type="audio/wav">
+	</audio>
 
 <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 <script type="text/javascript">
@@ -28,22 +69,89 @@
 	var socket = io.connect('http://ec2-54-200-21-97.us-west-2.compute.amazonaws.com:8080/');
 	var socketId = null;
 	var player = null;
+	var number = null;
+
+	var char1src = "http://itp.nyu.edu/~jab680/assets/char1_mobile.png";
+	var char2src = "http://itp.nyu.edu/~jab680/assets/char2_mobile.png";
+	var char3src = "http://itp.nyu.edu/~jab680/assets/char3_mobile.png";
+	var char4src = "http://itp.nyu.edu/~jab680/assets/char4_mobile.png";
+	var char5src = "http://itp.nyu.edu/~jab680/assets/char5_mobile.png";
+	var char6src = "http://itp.nyu.edu/~jab680/assets/char6_mobile.png";
+	var char7src = "http://itp.nyu.edu/~jab680/assets/char7_mobile.png";
+	var char8src = "http://itp.nyu.edu/~jab680/assets/char8_mobile.png";
+	var char9src = "http://itp.nyu.edu/~jab680/assets/char9_mobile.png";
+	var char10src = "http://itp.nyu.edu/~jab680/assets/char10_mobile.png";
+
+	var jump = document.getElementById("jump");
+
+	var allTouches, allTouchesLength;
 
 	socket.on('connect', function() {
 		socketId = socket.socket.sessionid;
-		socket.emit('playerConnect');
+		//socket.emit('playerConnect');
 	});
 
 	socket.on('players', function (data) {
 		if (data.socketId === socketId) {
 			player = data.type;
-			document.getElementById("log").innerHTML = "<h1>you are " + player + "</h1>";
-			// socket.emit('playerConnect', {"player": player});
+			number = player.slice(6);
+
+			if (number == 0) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char1src;
+			}
+
+			else if (number == 1) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char2src;
+			}
+
+			else if (number == 2) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char3src;
+			}
+
+			else if (number == 3) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char4src;
+			}
+
+			else if (number == 4) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char5src;
+			}
+
+			else if (number == 5) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char6src;
+			}
+
+			else if (number == 6) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char7src;
+			}
+
+			else if (number == 7) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char8src;
+			}
+
+			else if (number == 8) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char9src;
+			}
+
+			else if (number == 9) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = char10src;
+			}
+
+			socket.emit('playerConnect', {"id": number});
 		}
 	});
 
 	var sendMove = function(direction) {
-		socket.emit('move', {"id": player, "direction": direction});
+		socket.emit('move', {"id": number, "direction": direction});
 	}
 
 	var handleOrientationEvent = function(e) {
@@ -51,7 +159,15 @@
 		beta = e.beta;
 		gamma = e.gamma;
 
-		//console.log('a: ' + alpha + 'b: ' + beta + 'g: ' + gamma);
+		if (gamma > 60) { 
+			gamma = 60;
+		}
+
+		if (gamma < -60) {
+			gamma = -60;
+		}
+
+		console.log('a: ' + alpha + 'b: ' + beta + 'g: ' + gamma);
 		var a = document.getElementById('alpha');
 		a.innerHTML = alpha;
 		var b = document.getElementById('beta');
@@ -59,12 +175,18 @@
 		var g = document.getElementById('gamma');
 		g.innerHTML = gamma;
 
-		if (gamma > 60) {
-			sendMove('right');
-		}
+		if (allTouchesLength >= 1) {
 
-		if (gamma < -60) {
-			sendMove('left');
+			if (gamma > 35) {
+				sendMove('right');
+				document.getElementById("arrow").src = "http://itp.nyu.edu/~jab680/assets/rightarrow.png";
+			}
+
+			if (gamma < -35) {
+				sendMove('left');
+				document.getElementById("arrow").src = "http://itp.nyu.edu/~jab680/assets/leftarrow.png";
+
+			}
 		}
 	}
 
@@ -72,13 +194,39 @@
 		acc = e.acceleration;
 		maxAcc = Math.max(acc.x, acc.y, acc.z);
 
-		if (acc.z > 5.0) {
-			sendMove('up');
+		var accz = document.getElementById('accz');
+		accz.innerHTML = acc.z;
+
+		if (acc.z > 7.0) {
+			acc.z = 7.0;
 		}
+
+		if (allTouchesLength >=1 ) {
+
+			if (acc.z > 5.0) {
+				sendMove('up');
+				jump.play();
+			}
+		}
+	}
+
+	var handleTouchEvent = function(e) {
+		allTouches = e.touches;
+		allTouchesLength = allTouches.length;
+
+		var touchCountElem = document.getElementById('touch-count');
+
+		if (e.type === 'touchstart') {
+			e.preventDefault();
+		}
+
+		touchCountElem.innerHTML = allTouchesLength;
 	}
 
 	window.addEventListener('devicemotion', handleMotionEvent, false);
 	window.addEventListener('deviceorientation', handleOrientationEvent, false);
+	window.addEventListener('touchstart', handleTouchEvent, false);
+	window.addEventListener('touchend', handleTouchEvent, false);
 
 </script>
 </body>

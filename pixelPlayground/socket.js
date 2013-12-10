@@ -53,8 +53,10 @@ io.sockets.on('connection', function (socket) {
 		console.log("New player's ID: " + playerId);
 	}
 
-	socket.on('playerConnect', function() {
-		io.sockets.emit('createPlayer');
+	socket.on('playerConnect', function (data) {
+		//console.log(data);
+		var playerNumber = data.id;
+		io.sockets.emit('createPlayer', {id: playerNumber});
 	})
 
 	socket.on('move', function (data) {
