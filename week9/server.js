@@ -31,10 +31,10 @@ var twitter = require('mtwitter');
 
 //Twitter Setup
 var twit = new twitter({
-	consumer_key: 'EyK85zjxfMoYNo3GJmLH0A',
-	consumer_secret: '0hOo5MgpiMHodYtHubK8NHvcviv581rHRT3vJwTyZc',
-	access_token_key: '57089769-Mfu2XL5zI4nH1V8p3eN74A9jpolQMleB6qsZein3A',
-	access_token_secret: 'dnUZoXLpbGD8LC06n7KNq2DshiTlyFQbSVx04E'
+	consumer_key: 'TKTKTK',
+	consumer_secret: 'TKTKTK',
+	access_token_key: 'TKTKTK',
+	access_token_secret: 'TKTKTK'
 });
 
 // var listOfSearchWords = [

@@ -45,8 +45,7 @@
 		<img id="yourchar"></img>
 		<img id="arrow"></img>
 
-		
-
+		<!--
 		<ul>
 	  		<li>alpha: <span id="alpha"></span></li>
 	    	<li>beta: <span id="beta"></span></li>
@@ -54,8 +53,7 @@
 	    	<li>Z acc: <span id="accz"></span></li>
 	    	<li>touches: <span id="touch-count"></span></li>
 		</ul>
-
-		
+		!-->
 
 	</div>
 
@@ -71,16 +69,12 @@
 	var player = null;
 	var number = null;
 
-	var char1src = "http://itp.nyu.edu/~jab680/assets/char1_mobile.png";
-	var char2src = "http://itp.nyu.edu/~jab680/assets/char2_mobile.png";
-	var char3src = "http://itp.nyu.edu/~jab680/assets/char3_mobile.png";
-	var char4src = "http://itp.nyu.edu/~jab680/assets/char4_mobile.png";
-	var char5src = "http://itp.nyu.edu/~jab680/assets/char5_mobile.png";
-	var char6src = "http://itp.nyu.edu/~jab680/assets/char6_mobile.png";
-	var char7src = "http://itp.nyu.edu/~jab680/assets/char7_mobile.png";
-	var char8src = "http://itp.nyu.edu/~jab680/assets/char8_mobile.png";
-	var char9src = "http://itp.nyu.edu/~jab680/assets/char9_mobile.png";
-	var char10src = "http://itp.nyu.edu/~jab680/assets/char10_mobile.png";
+	var characterImageSources = 10;
+	var characterImages = [];
+
+	for (i = 0; i < characterImageSources; i++) {
+		characterImages[i] = "http://itp.nyu.edu/~jab680/assets/char" + [i] + "_mobile.png";
+	}
 
 	var jump = document.getElementById("jump");
 
@@ -96,54 +90,161 @@
 			player = data.type;
 			number = player.slice(6);
 
+			// for (i = 0; i < characterImageSources; i++) {
+			// 	if (number == i) {
+			// 		document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+			// 		document.getElementById("yourchar").src = characterImages[i];
+			// 	}
+			// }
+
 			if (number == 0) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char1src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 1) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char2src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 2) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char3src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 3) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char4src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 4) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char5src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 5) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char6src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 6) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char7src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 7) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char8src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 8) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char9src;
+				document.getElementById("yourchar").src = characterImages[number];
 			}
 
 			else if (number == 9) {
 				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
-				document.getElementById("yourchar").src = char10src;
+				document.getElementById("yourchar").src = characterImages[number];
+			}
+
+			else if (number == 10) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[0];
+			}
+
+			else if (number == 11) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[1];
+			}
+
+			else if (number == 12) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[2];
+			}
+
+			else if (number == 13) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[3];
+			}
+
+			else if (number == 14) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[4];
+			}
+
+			else if (number == 15) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[5];
+			}
+
+			else if (number == 16) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[6];
+			}
+
+			else if (number == 17) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[7];
+			}
+
+			else if (number == 18) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[8];
+			}
+
+			else if (number == 19) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[9];
+			}
+
+			else if (number == 20) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[0];
+			}
+
+			else if (number == 21) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[1];
+			}
+
+			else if (number == 22) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[2];
+			}
+
+			else if (number == 23) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[3];
+			}
+
+			else if (number == 24) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[4];
+			}
+
+			else if (number == 25) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[5];
+			}
+
+			else if (number == 26) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[6];
+			}
+
+			else if (number == 27) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[7];
+			}
+
+			else if (number == 28) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[8];
+			}
+
+			else if (number == 29) {
+				document.getElementById("log").innerHTML = "<h1>You are Player " + number + "</h1>";
+				document.getElementById("yourchar").src = characterImages[9];
 			}
 
 			socket.emit('playerConnect', {"id": number});
@@ -167,13 +268,13 @@
 			gamma = -60;
 		}
 
-		console.log('a: ' + alpha + 'b: ' + beta + 'g: ' + gamma);
-		var a = document.getElementById('alpha');
-		a.innerHTML = alpha;
-		var b = document.getElementById('beta');
-		b.innerHTML = beta;
-		var g = document.getElementById('gamma');
-		g.innerHTML = gamma;
+		// console.log('a: ' + alpha + 'b: ' + beta + 'g: ' + gamma);
+		// var a = document.getElementById('alpha');
+		// a.innerHTML = alpha;
+		// var b = document.getElementById('beta');
+		// b.innerHTML = beta;
+		// var g = document.getElementById('gamma');
+		// g.innerHTML = gamma;
 
 		if (allTouchesLength >= 1) {
 
@@ -194,8 +295,8 @@
 		acc = e.acceleration;
 		maxAcc = Math.max(acc.x, acc.y, acc.z);
 
-		var accz = document.getElementById('accz');
-		accz.innerHTML = acc.z;
+		// var accz = document.getElementById('accz');
+		// accz.innerHTML = acc.z;
 
 		if (acc.z > 7.0) {
 			acc.z = 7.0;
@@ -218,6 +319,10 @@
 
 		if (e.type === 'touchstart') {
 			e.preventDefault();
+		}
+
+		if (allTouchesLength = 2) {
+			sendMove('flip');
 		}
 
 		touchCountElem.innerHTML = allTouchesLength;

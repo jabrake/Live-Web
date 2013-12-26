@@ -10,7 +10,7 @@
 		}
 
 		#demoCanvas, #debugCanvas {
-			z-index: 1;
+			z-index: 2;
 		}
 
 		#debugCanvas {
@@ -21,19 +21,32 @@
 			border: 5px solid #FF0000;
 		}
 
+		#demoCanvas {
+			border: 1px solid #000;
+			position: absolute;
+			top, left: 0;
+		}
+
 		#paused {
+			position: absolute;
+			top: 1480px;
+			left: 0;
 			z-index: 3;
 			width: 500px;
 			background-color: #FFF;
 			display: none;
 		}
 
-		#demoCanvas {
-			border: 1px solid #000;
+		#list {
+			position: absolute;
+			top: 1500px;
+			left: 0;
 		}
 
 		.button {
-			top: 580px;
+			position: absolute;
+			top: 1450px;
+			left: 0;
 			width: 250px;
 			height: 25px;
 			background-color: #5fd644;
@@ -42,16 +55,71 @@
 			padding-top:5px;
 		}
 
+		#leftPlatform {
+			position: absolute;
+			border: 1px solid #652E2E;
+			background-color: #652E2E;
+			width: 360px;
+			height: 100px;
+			left: 0;
+			top: 340px;
+			z-index: 3;
+		}
+
+		#rightPlatform {
+			position: absolute;
+			border: 1px solid #652E2E;
+			background-color: #652E2E;
+			width: 720px;
+			height: 25px;
+			left: 720px;
+			top: 712px;
+			z-index: 3;
+		}
+
+		#rightPlatform2 {
+			position: absolute;
+			border: 1px solid #652E2E;
+			background-color: #652E2E;
+			width: 320px;
+			height: 25px;
+			left: 1120px;
+			top: 662px;
+			z-index: 3;
+		}
+
+		#background {
+			position: absolute;
+			width: 1440px;
+			height: 780px;
+			top, left: 0;
+			z-index: 1;
+		}
+
+		#sign {
+			position: absolute;
+			width: 300px;
+			height: auto;
+			top: 30px;
+			left: 20px;
+			z-index: 3;
+		}
+
 	</style>
 	</head>
 <body>
 
 	<canvas id="demoCanvas"></canvas>
+	<img id="background" src="http://itp.nyu.edu/~jab680/assets/pixelPlaygroundWorld.png">
+	<img id="sign" src="http://itp.nyu.edu/~jab680/assets/hallofFame.png">
+	<div id="leftPlatform"></div>
+	<div id="rightPlatform"></div>
+	<div id="rightPlatform2"></div> 
 	<canvas width="1440" height="779" id="debugCanvas"></canvas>
 	<div id="paused">Paused. Click to resume.</div><br/>
 	<div id="debug" class="button">Show/Hide Debug</div>
 
-	<ul>
+	<ul id="list">
   		<li>alpha: <span id="alpha"></span></li>
     	<li>beta: <span id="beta"></span></li>
     	<li>gamma: <span id="gamma"></span></li>
@@ -87,24 +155,19 @@ luxanimals.demo = (function() {
 	var moveRight = false;
 	var bodies = [];
 	var actors = [];
+	var characterImageSources = 10;
+	var characterImages = [];
 	var impulseLeft, impulseRight, impulseUp, impulseDown;
 	var createPix1, createPix2;
 	var removeActor;
-	var world, actor1, actor2, skin;
+	var world, actor1, fixed1, skin;
 	var pix1BMP;
 	var alpha, beta, gamma, acc, maxAcc;
 	var canvasWidth, canvasHeight, debugCanvasWidth, debugCanvasHeight;
 
-	var char1src = "http://itp.nyu.edu/~jab680/assets/char1.png";
-	var char2src = "http://itp.nyu.edu/~jab680/assets/char2.png";
-	var char3src = "http://itp.nyu.edu/~jab680/assets/char3.png";
-	var char4src = "http://itp.nyu.edu/~jab680/assets/char4.png";
-	var char5src = "http://itp.nyu.edu/~jab680/assets/char5.png";
-	var char6src = "http://itp.nyu.edu/~jab680/assets/char6.png";
-	var char7src = "http://itp.nyu.edu/~jab680/assets/char7.png";
-	var char8src = "http://itp.nyu.edu/~jab680/assets/char8.png";
-	var char9src = "http://itp.nyu.edu/~jab680/assets/char9.png";
-	var char10src = "http://itp.nyu.edu/~jab680/assets/char10.png";
+	for (i = 0; i < characterImageSources; i++) {
+		characterImages[i] = "http://itp.nyu.edu/~jab680/assets/char" + [i] + ".png";
+	}
 
 	$('#debug').on('click', function() { $('#debugCanvas').toggle(); });  // toggle debug view
 
@@ -138,44 +201,130 @@ luxanimals.demo = (function() {
 
 		console.log(playerNumber);
 
+		// for (i = 0; i < characterImageSources; i++) {
+		// 	if (playerNumber == i) {
+		// 		pixels.spawn(pix1BMP, characterImages[i]);
+		// 	}
+		// }
+
 		if (playerNumber == 0) {
-			pixels.spawn(pix1BMP, char1src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 1) {
-			pixels.spawn(pix1BMP, char2src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 2) {
-			pixels.spawn(pix1BMP, char3src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 3) {
-			pixels.spawn(pix1BMP, char4src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 4) {
-			pixels.spawn(pix1BMP, char5src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 5) {
-			pixels.spawn(pix1BMP, char6src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 6) {
-			pixels.spawn(pix1BMP, char7src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 7) {
-			pixels.spawn(pix1BMP, char8src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 8) {
-			pixels.spawn(pix1BMP, char9src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
 		}
 
 		else if (playerNumber == 9) {
-			pixels.spawn(pix1BMP, char10src);
+			pixels.spawn(pix1BMP, characterImages[playerNumber]);
+		}
+
+		else if (playerNumber == 10) {
+			pixels.spawn(pix1BMP, characterImages[0]);
+		}
+
+		else if (playerNumber == 11) {
+			pixels.spawn(pix1BMP, characterImages[1]);
+		}
+
+		else if (playerNumber == 12) {
+			pixels.spawn(pix1BMP, characterImages[2]);
+		}
+
+		else if (playerNumber == 13) {
+			pixels.spawn(pix1BMP, characterImages[3]);
+		}
+
+		else if (playerNumber == 14) {
+			pixels.spawn(pix1BMP, characterImages[4]);
+		}
+
+		else if (playerNumber == 15) {
+			pixels.spawn(pix1BMP, characterImages[5]);
+		}
+
+		else if (playerNumber == 16) {
+			pixels.spawn(pix1BMP, characterImages[6]);
+		}
+
+		else if (playerNumber == 17) {
+			pixels.spawn(pix1BMP, characterImages[7]);
+		}
+
+		else if (playerNumber == 18) {
+			pixels.spawn(pix1BMP, characterImages[8]);
+		}
+
+		else if (playerNumber == 19) {
+			pixels.spawn(pix1BMP, ccharacterImages[9]);
+		}
+
+		else if (playerNumber == 20) {
+			pixels.spawn(pix1BMP, characterImages[0]);
+		}
+
+		else if (playerNumber == 21) {
+			pixels.spawn(pix1BMP, characterImages[1]);
+		}
+
+		else if (playerNumber == 22) {
+			pixels.spawn(pix1BMP, characterImages[2]);
+		}
+
+		else if (playerNumber == 23) {
+			pixels.spawn(pix1BMP, characterImages[3]);
+		}
+
+		else if (playerNumber == 24) {
+			pixels.spawn(pix1BMP, characterImages[4]);
+		}
+
+		else if (playerNumber == 25) {
+			pixels.spawn(pix1BMP, characterImages[5]);
+		}
+
+		else if (playerNumber == 26) {
+			pixels.spawn(pix1BMP, characterImages[6]);
+		}
+
+		else if (playerNumber == 27) {
+			pixels.spawn(pix1BMP, characterImages[7]);
+		}
+
+		else if (playerNumber == 28) {
+			pixels.spawn(pix1BMP, characterImages[8]);
+		}
+
+		else if (playerNumber == 29) {
+			pixels.spawn(pix1BMP, characterImages[9]);
 		}
 		//console.log(data);
 	});
@@ -215,6 +364,10 @@ luxanimals.demo = (function() {
 		if (direction == "up") {
 			impulseUp(bodies[player]);
 		}
+
+		if (direction == "flip") {
+			//
+		}
 	}
 
 	document.addEventListener('keydown', function (evt) {
@@ -223,7 +376,7 @@ luxanimals.demo = (function() {
 
 		switch (key) {
 			case 32:
-			pixels.spawn(pix1BMP, char1src);
+			pixels.spawn(pix1BMP, characterImages[0]);
 			break;
 
 			case 37: //LEFT
@@ -231,6 +384,8 @@ luxanimals.demo = (function() {
 			for (var i = 0; i < bodies.length; i++) {
 				impulseLeft(bodies[i]);
 			}
+
+			break;
 
 			case 38: //UP
 
@@ -249,7 +404,12 @@ luxanimals.demo = (function() {
 			break;
 
 			case 40: //DOWN
-			pixels.spawn(pix2BMP, char2src);
+			//FLIP GRAVITY
+			// antiGrav = true;
+			console.log("key down pressed");
+
+			changeGravity();
+
 			break;
 		}
 
@@ -315,6 +475,9 @@ luxanimals.demo = (function() {
 			context.canvas.height = canvasHeight;
 			// debugContext.debugCanvas.width = debugCanvasWidth;
 			// debugContext.debugCanvas.height = debugCanvasHeight;
+
+			//box2d.createFixedObject(char1src, canvasWidth/4, 50, 1, canvasHeight/2);
+
 		}
 
 		var ticker = function() {
@@ -337,7 +500,7 @@ luxanimals.demo = (function() {
 		var spawn = function(characterBMP, source) {
 			characterBMP = new Bitmap(source);
 			characterBMP.x = Math.round(Math.random()*1400);
-			characterBMP.y = -30;
+			characterBMP.y = 10;
 			characterBMP.regX = 25;   // important to set origin point to center of your bitmap
 			characterBMP.regY = 11; 
 			characterBMP.snapToPixel = true;
@@ -363,8 +526,6 @@ luxanimals.demo = (function() {
 		var lastTimestamp = Date.now();
 		var fixedTimestepAccumulator = 0;
 		var bodiesToRemove = [];
-		// var actors = [];
-		// var bodies = [];
 
 		// box2d world setup and boundaries
 		var setup = function() {
@@ -384,6 +545,19 @@ luxanimals.demo = (function() {
 			var floor = world.CreateBody(floorBodyDef);
 			floor.CreateFixture(floorFixture);
 
+			// boundaries - ceiling
+			var ceilingFixture = new b2FixtureDef;
+			ceilingFixture.density = 1;
+			ceilingFixture.restitution = 0;
+			ceilingFixture.shape = new b2PolygonShape;
+			ceilingFixture.shape.SetAsBox(canvasWidth / SCALE, 10 / SCALE);
+			var ceilingBodyDef = new b2BodyDef;
+			ceilingBodyDef.type = b2Body.b2_staticBody;
+			ceilingBodyDef.position.x = -25 / SCALE;
+			ceilingBodyDef.position.y = -1 / SCALE;
+			var ceiling = world.CreateBody(ceilingBodyDef);
+			ceiling.CreateFixture(ceilingFixture);
+
 			// boundaries - left
 			var leftFixture = new b2FixtureDef;
 			leftFixture.shape = new b2PolygonShape;
@@ -394,6 +568,39 @@ luxanimals.demo = (function() {
 			leftBodyDef.position.y = -25 / SCALE;
 			var left = world.CreateBody(leftBodyDef);
 			left.CreateFixture(leftFixture);
+
+			// left platform
+			var leftPlatformFixture = new b2FixtureDef;
+			leftPlatformFixture.shape = new b2PolygonShape;
+			leftPlatformFixture.shape.SetAsBox((canvasWidth/4) / SCALE, 50 / SCALE);
+			var leftPlatformBodyDef = new b2BodyDef;
+			leftPlatformBodyDef.type = b2Body.b2_staticBody;
+			leftPlatformBodyDef.position.x = 1 / SCALE;
+			leftPlatformBodyDef.position.y = (canvasHeight/2) / SCALE;
+			var leftPlatform = world.CreateBody(leftPlatformBodyDef);
+			leftPlatform.CreateFixture(leftPlatformFixture);
+
+			// right platform
+			var rightPlatformFixture = new b2FixtureDef;
+			rightPlatformFixture.shape = new b2PolygonShape;
+			rightPlatformFixture.shape.SetAsBox((canvasWidth/4) / SCALE, 15 / SCALE);
+			var rightPlatformBodyDef = new b2BodyDef;
+			rightPlatformBodyDef.type = b2Body.b2_staticBody;
+			rightPlatformBodyDef.position.x = 1080 / SCALE;
+			rightPlatformBodyDef.position.y = 725 / SCALE;
+			var rightPlatform = world.CreateBody(rightPlatformBodyDef);
+			rightPlatform.CreateFixture(rightPlatformFixture);
+
+			// right platform 2
+			var right2PlatformFixture = new b2FixtureDef;
+			right2PlatformFixture.shape = new b2PolygonShape;
+			right2PlatformFixture.shape.SetAsBox((canvasWidth/4) / SCALE, 15 / SCALE);
+			var right2PlatformBodyDef = new b2BodyDef;
+			right2PlatformBodyDef.type = b2Body.b2_staticBody;
+			right2PlatformBodyDef.position.x = 1480 / SCALE;
+			right2PlatformBodyDef.position.y = 675 / SCALE;
+			var right2Platform = world.CreateBody(right2PlatformBodyDef);
+			right2Platform.CreateFixture(right2PlatformFixture);
 
 			// boundaries - right
 			var rightFixture = new b2FixtureDef;
@@ -430,6 +637,16 @@ luxanimals.demo = (function() {
 			actors.push(this);
 		}
 
+		var fixedObject = function(body, skin) {
+			this.body = body;
+			this.skin = skin;
+			this.update = function() {
+				this.skin.rotation = this.body.GetAngle() * (100 / Math.PI);
+				this.skin.x = this.body.GetWorldCenter().x * SCALE;
+				this.skin.y = this.body.GetWorldCenter().y * SCALE;
+			}
+		}
+
 		// create bird body shape and assign actor object
 		var createPix1 = function(skin) {
 			var pix1Fixture = new b2FixtureDef;
@@ -451,23 +668,19 @@ luxanimals.demo = (function() {
 			bodies.push(pix1);
 		}
 
-		// createPix2 = function(skin) {
-		// 	var pix2Fixture = new b2FixtureDef;
-		// 	pix2Fixture.density = 1;
-		// 	pix2Fixture.restitution = 0;
-		// 	pix2Fixture.shape = new b2PolygonShape;
-		// 	pix2Fixture.shape = SetAsBox(25 / SCALE, 11 / SCALE);
-		// 	var pix2BodyDef = new b2BodyDef;
-		// 	pix2BodyDef.type = b2Body.b2_dynamicBody;
-		// 	pix2BodyDef.position.x = skin.x / SCALE;
-		// 	pix2BodyDef.position.y = skin.y / SCALE;
-		// 	var pix2 = world.CreateBody(pix2BodyDef);
-		// 	pix2.CreateFixture(pix2Fixture);
+		var createFixedObject = function(skin, width, height, xloc, yloc) {
+			var platformFixture = new b2FixtureDef;
+			platformFixture.shape = new b2PolygonShape;
+			platformFixture.shape.SetAsBox(width / SCALE, height / SCALE);
+			var platformBodyDef = new b2BodyDef;
+			platformBodyDef.type = b2Body.b2_staticBody;
+			platformBodyDef.position.x = xloc / SCALE;
+			platformBodyDef.position.y = yloc / SCALE;
+			var platform = world.CreateBody(platformBodyDef);
+			platform.CreateFixture(platformFixture);
 
-		// 	actor2 = new actorObject(pix2, skin);
-		// 	pix2.SetUserData(actor2);
-		// 	bodies.push(pix2);
-		// }
+			fixed1 = new fixedObject(platform, skin);
+		}
 
 		impulseLeft = function(body) {
 			this.body = body;
@@ -481,7 +694,7 @@ luxanimals.demo = (function() {
 
 		impulseUp = function(body) {
 			this.body = body;
-			this.body.ApplyImpulse(new b2Vec2(0, -2), this.body.GetWorldCenter());
+			this.body.ApplyImpulse(new b2Vec2(0, -3), this.body.GetWorldCenter());
 		}
 
 		impulseDown = function(body) {
@@ -489,7 +702,18 @@ luxanimals.demo = (function() {
 			this.body.ApplyImpulse(new b2Vec2(0, 5), this.body.GetWorldCenter());
 		}
 
-		// remove actor and it's skin object
+		// changeGravity = function() {
+		// 	if (antiGrav == true) {
+		// 		console.log("entered gravity function");
+		// 		world.setGravity(new b2Vec2(0, -10), true);
+		// 	}
+
+		// 	else if (antiGrav == false) {
+		// 		world.setGravity(new b2Vec2(0, 10), true);
+		// 	}
+		// }
+
+		// remove actor and its skin object
 		removeActor = function(actor) {
 			stage.removeChild(actor.skin);
 			actors.splice(actors.indexOf(actor),1);
@@ -538,6 +762,8 @@ luxanimals.demo = (function() {
 			setup: setup,
 			update: update,
 			createPix1: createPix1,
+			createFixedObject: createFixedObject,
+			removeActor: removeActor,
 			pauseResume: pauseResume
 		}
 	})();
